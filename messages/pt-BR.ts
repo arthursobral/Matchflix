@@ -72,6 +72,7 @@ export const ptBR = {
       eyebrowMobile: "Código da sala",
       private: "Sala privada · Entrada pelo link ou código",
       copy: "Copiar link de convite",
+      copied: "Link copiado",
     },
     who: "Quem vem para a sessão",
     whoMobile: "Na sala",

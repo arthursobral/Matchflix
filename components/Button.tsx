@@ -11,12 +11,13 @@ type Props = {
   children: ReactNode;
   icon: keyof typeof icons;
   variant?: "primary" | "secondary" | "gold";
-  /** Sem `href`, o botão é exibido como indisponível. */
+  /** Com `href` vira link; com `onClick` vira botão. Sem nenhum dos dois, é exibido como indisponível. */
   href?: string;
+  onClick?: () => void;
   unavailableHint?: string;
 };
 
-export function Button({ children, icon, variant = "primary", href, unavailableHint }: Props) {
+export function Button({ children, icon, variant = "primary", href, onClick, unavailableHint }: Props) {
   const className = `${styles.button} ${styles[variant]}`;
   const content = (
     <>
@@ -32,6 +33,13 @@ export function Button({ children, icon, variant = "primary", href, unavailableH
       <Link href={href} className={className}>
         {content}
       </Link>
+    );
+  }
+  if (onClick) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        {content}
+      </button>
     );
   }
   return (

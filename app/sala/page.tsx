@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
+import { CopyInviteButton } from "@/components/CopyInviteButton";
 import { demoRoom as room } from "@/lib/demo-room";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
@@ -26,9 +27,7 @@ export default function RoomPage() {
           <p className={styles.code}>{room.code}</p>
           <p className={`${styles.private} desktop-only`}>{r.invite.private}</p>
           <div className={styles.copy}>
-            <Button icon="link" variant="gold" unavailableHint={t.nav.soon}>
-              {r.invite.copy}
-            </Button>
+            <CopyInviteButton label={r.invite.copy} copiedLabel={r.invite.copied} code={room.code} />
           </div>
           <p className={`${styles.meta} desktop-only`}>
             {room.country} · {room.genres}
