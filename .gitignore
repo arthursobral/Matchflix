@@ -1,0 +1,31 @@
+# Documentação: só o README vai para o repositório
+*.md
+!README.md
+docs/
+
+# Skills e ferramentas de agente
+.claude/skills/
+skills-lock.json
+.playwright/
+
+# Dependências e build
+node_modules/
+.next/
+out/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Pacote de design aprovado (referência local)
+Matchflix-Design-Aprovado-v1/
