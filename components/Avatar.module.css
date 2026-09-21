@@ -1,0 +1,17 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #343034;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+}
+
+.host {
+  background: #41232a;
+  border-color: var(--gold);
+  color: var(--gold);
+}
