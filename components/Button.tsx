@@ -10,7 +10,7 @@ const icons = {
 type Props = {
   children: ReactNode;
   icon: keyof typeof icons;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "gold";
   /** Sem `href`, o botão é exibido como indisponível. */
   href?: string;
   unavailableHint?: string;
