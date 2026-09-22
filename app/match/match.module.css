@@ -1,0 +1,225 @@
+/* Base = mobile (referência 390 × 920). Desktop (referência 1440 × 1000) a partir de 1200px. */
+.main {
+  position: relative;
+  padding-top: 34px;
+  text-align: center;
+}
+
+.halo {
+  position: absolute;
+  left: calc(50% - 260px);
+  top: -24px;
+  width: 520px;
+  height: 480px;
+  pointer-events: none;
+}
+
+.head,
+.visual,
+.info {
+  position: relative;
+}
+
+.head h1 {
+  margin-top: 12px;
+  font: 400 45px/54px var(--font-serif);
+}
+
+.summary {
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.visual {
+  margin: 27px 0 0;
+}
+
+.poster {
+  display: block;
+  width: 132px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.info h2 {
+  margin-top: 16px;
+  font: 400 30px/36px var(--font-serif);
+}
+
+.meta {
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.people {
+  margin-top: 19px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.avatars {
+  display: inline-flex;
+  gap: 9px;
+}
+
+.where {
+  position: relative;
+  margin-top: 32px;
+  padding: 17px 20px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.provider {
+  margin-top: 12px;
+}
+
+.provider strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.provider span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.check {
+  position: absolute;
+  right: 20px;
+  top: 49px;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.buttons {
+  display: grid;
+  gap: 12px;
+  margin-top: 27px;
+}
+
+.buttons > :last-child {
+  --button-h: 44px;
+}
+
+@media (min-width: 1200px) {
+  .main {
+    display: grid;
+    grid-template-columns: 334px minmax(0, 593px);
+    grid-template-rows: auto 1fr;
+    column-gap: 123px;
+    margin-left: min(214px, max(0px, calc(100% - 1098px)));
+    padding-top: 113px;
+    text-align: left;
+  }
+
+  .halo {
+    left: 49px;
+    top: -8px;
+    width: 800px;
+    height: 770px;
+  }
+
+  .visual {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    margin: 0;
+    text-align: center;
+  }
+
+  .poster {
+    width: 334px;
+  }
+
+  .visual figcaption {
+    margin-top: 44px;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  .head {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .head h1 {
+    margin-top: 5px;
+    font-size: 76px;
+    line-height: 76px;
+  }
+
+  .summary {
+    margin-top: 20px;
+    font-size: 16px;
+  }
+
+  .info {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .info h2 {
+    margin-top: 31px;
+    font-size: 38px;
+    line-height: 46px;
+  }
+
+  .meta {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .people {
+    display: flex;
+    align-items: center;
+    gap: 19px;
+    margin-top: 24px;
+  }
+
+  .avatars {
+    gap: 9px;
+  }
+
+  .where {
+    margin-top: 32px;
+    padding: 19px 24px 28px;
+  }
+
+  .provider {
+    display: flex;
+    align-items: baseline;
+    gap: 68px;
+    margin-top: 14px;
+  }
+
+  .provider strong {
+    font-size: 20px;
+  }
+
+  .provider span {
+    margin-top: 0;
+    font-size: 13px;
+  }
+
+  .buttons {
+    gap: 13px;
+    margin-top: 34px;
+  }
+
+  .buttons > :last-child {
+    --button-h: 52px;
+  }
+}

@@ -11,7 +11,7 @@ const icons = {
 
 type Props = {
   children: ReactNode;
-  icon: keyof typeof icons;
+  icon?: keyof typeof icons;
   variant?: "primary" | "secondary" | "gold";
   /** Com `href` vira link; com `onClick` vira botão. Sem nenhum dos dois, é exibido como indisponível. */
   href?: string;
@@ -20,13 +20,15 @@ type Props = {
 };
 
 export function Button({ children, icon, variant = "primary", href, onClick, unavailableHint }: Props) {
-  const className = `${styles.button} ${styles[variant]}`;
+  const className = `${styles.button} ${styles[variant]} ${icon ? "" : styles.plain}`;
   const content = (
     <>
       <span className={styles.label}>{children}</span>
-      <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
-        <path d={icons[icon]} />
-      </svg>
+      {icon && (
+        <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
+          <path d={icons[icon]} />
+        </svg>
+      )}
     </>
   );
 

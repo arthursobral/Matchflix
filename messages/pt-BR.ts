@@ -101,5 +101,14 @@ export const ptBR = {
     hintDesktop: ["← Passar", "→ Quero assistir"],
     hintMobile: "Deslize ou use os botões para escolher.",
   },
+  match: {
+    eyebrow: "A escolha é de todos",
+    title: "Deu match.",
+    summary: (n: number, total: number) => `${n} de ${total} querem assistir.`,
+    summaryExtra: "Agora é só preparar a pipoca.",
+    caption: "A sessão de hoje já tem um favorito.",
+    watch: "Ver opções para assistir",
+    keepGoing: "Continuar escolhendo",
+  },
   footer: "Uma escolha em comum. Uma noite de cinema.",
 } as const;

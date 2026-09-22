@@ -17,6 +17,10 @@
   background: var(--accent);
 }
 
+.plain {
+  padding: 0 14px;
+}
+
 .gold {
   background: var(--gold);
   color: var(--bg);
