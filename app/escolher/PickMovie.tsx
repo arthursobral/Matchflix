@@ -21,6 +21,12 @@ export function PickMovie() {
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
+  // dx/dragging em estado só animam o arraste; a lógica usa refs, sempre síncronas
+  // (o estado do React é de prioridade baixa para eventos de ponteiro e pode não ter
+  // atualizado ainda quando o próximo evento dispara, sob uma máquina ocupada — o
+  // pointermove seguinte leria "dragging" desatualizado, ou o pointerup leria "dx" velho).
+  const dxRef = useRef(0);
+  const isDraggingRef = useRef(false);
 
   const movie = demoMovies[step % demoMovies.length];
   const pass = useCallback(() => setStep((s) => s + 1), []);
@@ -37,8 +43,10 @@ export function PickMovie() {
   }, [pass, like]);
 
   function endSwipe() {
-    if (dx > SWIPE_DISTANCE) like();
-    else if (dx < -SWIPE_DISTANCE) pass();
+    if (dxRef.current > SWIPE_DISTANCE) like();
+    else if (dxRef.current < -SWIPE_DISTANCE) pass();
+    dxRef.current = 0;
+    isDraggingRef.current = false;
     setDx(0);
     setDragging(false);
   }
@@ -85,10 +93,15 @@ export function PickMovie() {
             style={{ transform: `translateX(${dx}px) rotate(${dx / 25}deg)` }}
             onPointerDown={(e) => {
               startX.current = e.clientX;
+              isDraggingRef.current = true;
               setDragging(true);
               e.currentTarget.setPointerCapture(e.pointerId);
             }}
-            onPointerMove={(e) => dragging && setDx(e.clientX - startX.current)}
+            onPointerMove={(e) => {
+              if (!isDraggingRef.current) return;
+              dxRef.current = e.clientX - startX.current;
+              setDx(dxRef.current);
+            }}
             onPointerUp={endSwipe}
             onPointerCancel={endSwipe}
           >

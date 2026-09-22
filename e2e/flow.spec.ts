@@ -93,6 +93,8 @@ test.describe("Escolher filme", () => {
 
   test("setas do teclado: ← passa, → aprova", async ({ page }) => {
     await page.goto("/escolher");
+    // Espera a hidratação (o listener de teclado é registrado em useEffect) antes de teclar.
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.keyboard.press("ArrowLeft");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Horizonte");
     await page.keyboard.press("ArrowRight");

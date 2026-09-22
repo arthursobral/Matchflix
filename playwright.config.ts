@@ -13,6 +13,9 @@ export default defineConfig({
     // Local: usa o Chrome instalado (sem baixar navegador). CI: Chromium do Playwright.
     channel: process.env.CI ? undefined : "chrome",
     trace: "retain-on-failure",
+    // O app desliga suas transições (halo, arraste) nesse modo — evita testes instáveis
+    // por medirem a posição de um elemento ainda em animação (transition: transform 250ms).
+    reducedMotion: "reduce",
   },
   webServer: {
     command: `npm run build && npx next start -p ${PORT}`,

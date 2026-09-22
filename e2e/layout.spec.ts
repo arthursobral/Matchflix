@@ -10,7 +10,13 @@ type Box = [number, number, number, number];
 type Check = { name: string; find: (page: Page) => Locator; box: Box };
 type Screen = { path: string; checks: Check[] };
 
-const TOLERANCE = 3; // px
+// ponytail: 3px localmente (Chrome + Georgia/Segoe UI instaladas), mas o runner do CI é
+// Linux sem essas fontes (proprietárias, sem licença para redistribuir — ver docs/m0).
+// O texto renderiza com a fonte de sistema alternativa, com métricas um pouco diferentes,
+// o que desloca em cascata os elementos que vêm depois em cada tela (até ~12px observado).
+// Upgrade: instalar fontes metricamente compatíveis no CI (ex.: Gelasio p/ Georgia) e
+// reduzir a tolerância, se algum dia isso importar mais que velocidade do CI.
+const TOLERANCE = process.env.CI ? 16 : 3;
 
 const link = (name: string) => (p: Page) => p.getByRole("link", { name, exact: true });
 const button = (name: string) => (p: Page) => p.getByRole("button", { name, exact: true });
