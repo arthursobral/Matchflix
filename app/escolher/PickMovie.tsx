@@ -30,7 +30,7 @@ export function PickMovie() {
   // Filme que está saindo de cena (animação de "Passar"), com a mesma lógica de ref:
   // pass() é chamada por vários eventos (botão, teclado, arraste) e precisa do filme
   // atual, não de um capturado por um useCallback com deps vazias.
-  const [exit, setExit] = useState<{ key: number; poster: (typeof demoMovies)[number]["poster"] } | null>(null);
+  const [exit, setExit] = useState<{ key: number; poster: (typeof demoMovies)[number]["poster"]; fromDx: number } | null>(null);
 
   const movie = demoMovies[step % demoMovies.length];
   const movieRef = useRef(movie);
@@ -38,9 +38,11 @@ export function PickMovie() {
     movieRef.current = movie;
   }, [movie]);
 
-  const pass = useCallback(() => {
+  // fromDx: de onde o pôster deve continuar voando. Vem do arraste (dxRef.current, já
+  // além do limiar) ou é 0 quando "Passar" veio do botão ou do teclado (sem arraste em curso).
+  const pass = useCallback((fromDx = 0) => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduceMotion) setExit({ key: Date.now(), poster: movieRef.current.poster });
+    if (!reduceMotion) setExit({ key: Date.now(), poster: movieRef.current.poster, fromDx });
     setStep((s) => s + 1);
   }, []);
   // M1: "Quero assistir" leva direto à tela de match de demonstração; o voto real é do M5.
@@ -57,7 +59,7 @@ export function PickMovie() {
 
   function endSwipe() {
     if (dxRef.current > SWIPE_DISTANCE) like();
-    else if (dxRef.current < -SWIPE_DISTANCE) pass();
+    else if (dxRef.current < -SWIPE_DISTANCE) pass(dxRef.current);
     dxRef.current = 0;
     isDraggingRef.current = false;
     setDx(0);
@@ -101,11 +103,7 @@ export function PickMovie() {
           {demoMovies.map((m) => (
             <div key={m.id} className={`${styles.halo} ${styles[m.halo]} ${m.id === movie.id ? styles.on : ""}`} aria-hidden="true" />
           ))}
-          {exit && (
-            <div key={exit.key} className={`${styles.card} ${styles.exitCard}`} aria-hidden="true" onAnimationEnd={() => setExit(null)}>
-              <Poster poster={exit.poster} className={styles.poster} />
-            </div>
-          )}
+          {exit && <ExitingCard key={exit.key} poster={exit.poster} fromDx={exit.fromDx} onDone={() => setExit(null)} />}
           <div
             key={step}
             className={`${styles.card} ${dragging ? styles.dragging : ""}`}
@@ -149,7 +147,7 @@ export function PickMovie() {
 
         <div className={styles.actions}>
           <div className={styles.buttons}>
-            <Button icon="close" variant="secondary" onClick={pass}>
+            <Button icon="close" variant="secondary" onClick={() => pass()}>
               {p.pass}
             </Button>
             <Button icon="heart" onClick={like}>
@@ -164,5 +162,49 @@ export function PickMovie() {
         </div>
       </div>
     </main>
+  );
+}
+
+const FLY_DISTANCE = 500;
+const FLY_ROTATION = 18;
+
+/**
+ * O pôster que "Passar" tira de cena. Continua a partir de onde o arraste soltou
+ * (`fromDx`, 0 quando veio de botão/teclado) em vez de reiniciar do centro — a posição
+ * inicial é aplicada sem transição, e só no quadro seguinte ligamos a transição até o
+ * destino final, técnica clássica para animar CSS a partir de um valor dinâmico.
+ */
+function ExitingCard({
+  poster,
+  fromDx,
+  onDone,
+}: {
+  poster: (typeof demoMovies)[number]["poster"];
+  fromDx: number;
+  onDone: () => void;
+}) {
+  const [flown, setFlown] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setFlown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const dx = flown ? fromDx - FLY_DISTANCE : fromDx;
+  const rotate = flown ? -FLY_ROTATION : fromDx / 25;
+
+  return (
+    <div
+      className={`${styles.card} ${styles.exitCard}`}
+      aria-hidden="true"
+      onTransitionEnd={onDone}
+      style={{
+        transform: `translateX(${dx}px) rotate(${rotate}deg)`,
+        opacity: flown ? 0 : 1,
+        transition: flown ? "transform 280ms ease, opacity 280ms ease" : "none",
+      }}
+    >
+      <Poster poster={poster} className={styles.poster} />
+    </div>
   );
 }

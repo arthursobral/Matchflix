@@ -94,14 +94,18 @@
 }
 
 /* Clone que sai de cena ao "Passar" (botão, teclado ou arraste); some para a
-   esquerda enquanto o próximo pôster já está por baixo. */
+   esquerda enquanto o próximo pôster já está por baixo. Herda tamanho e posição
+   de .card, mas o movimento é controlado por estilo inline (ver ExitingCard em
+   PickMovie.tsx), para continuar exatamente de onde um arraste foi solto — por
+   isso cancela a animação e a transição herdadas de .card. */
 .exitCard {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1;
-  animation: cardExit 280ms ease forwards;
+  animation: none;
+  transition: none;
   pointer-events: none;
 }
 
@@ -109,13 +113,6 @@
   from {
     opacity: 0;
     transform: scale(0.95);
-  }
-}
-
-@keyframes cardExit {
-  to {
-    opacity: 0;
-    transform: translateX(-160%) rotate(-16deg);
   }
 }
 
