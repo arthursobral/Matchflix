@@ -84,12 +84,39 @@
   cursor: grab;
   touch-action: pan-y;
   transition: transform 250ms ease;
+  animation: cardEnter 240ms ease;
   user-select: none;
 }
 
 .card.dragging {
   cursor: grabbing;
   transition: none;
+}
+
+/* Clone que sai de cena ao "Passar" (botão, teclado ou arraste); some para a
+   esquerda enquanto o próximo pôster já está por baixo. */
+.exitCard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  animation: cardExit 280ms ease forwards;
+  pointer-events: none;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes cardExit {
+  to {
+    opacity: 0;
+    transform: translateX(-160%) rotate(-16deg);
+  }
 }
 
 .poster {
@@ -103,6 +130,11 @@
   .halo,
   .card {
     transition: none;
+  }
+
+  .card,
+  .exitCard {
+    animation: none;
   }
 }
 

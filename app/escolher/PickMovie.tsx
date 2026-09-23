@@ -27,9 +27,22 @@ export function PickMovie() {
   // pointermove seguinte leria "dragging" desatualizado, ou o pointerup leria "dx" velho).
   const dxRef = useRef(0);
   const isDraggingRef = useRef(false);
+  // Filme que está saindo de cena (animação de "Passar"), com a mesma lógica de ref:
+  // pass() é chamada por vários eventos (botão, teclado, arraste) e precisa do filme
+  // atual, não de um capturado por um useCallback com deps vazias.
+  const [exit, setExit] = useState<{ key: number; poster: (typeof demoMovies)[number]["poster"] } | null>(null);
 
   const movie = demoMovies[step % demoMovies.length];
-  const pass = useCallback(() => setStep((s) => s + 1), []);
+  const movieRef = useRef(movie);
+  useEffect(() => {
+    movieRef.current = movie;
+  }, [movie]);
+
+  const pass = useCallback(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduceMotion) setExit({ key: Date.now(), poster: movieRef.current.poster });
+    setStep((s) => s + 1);
+  }, []);
   // M1: "Quero assistir" leva direto à tela de match de demonstração; o voto real é do M5.
   const like = useCallback(() => router.push("/match"), [router]);
 
@@ -88,7 +101,13 @@ export function PickMovie() {
           {demoMovies.map((m) => (
             <div key={m.id} className={`${styles.halo} ${styles[m.halo]} ${m.id === movie.id ? styles.on : ""}`} aria-hidden="true" />
           ))}
+          {exit && (
+            <div key={exit.key} className={`${styles.card} ${styles.exitCard}`} aria-hidden="true" onAnimationEnd={() => setExit(null)}>
+              <Poster poster={exit.poster} className={styles.poster} />
+            </div>
+          )}
           <div
+            key={step}
             className={`${styles.card} ${dragging ? styles.dragging : ""}`}
             style={{ transform: `translateX(${dx}px) rotate(${dx / 25}deg)` }}
             onPointerDown={(e) => {

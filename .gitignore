@@ -5,6 +5,7 @@ docs/
 
 # Skills e ferramentas de agente
 .claude/skills/
+.agents/
 skills-lock.json
 .playwright/
 
