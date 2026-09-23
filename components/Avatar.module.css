@@ -1,0 +1,38 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background: #343034;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.sm {
+  width: 36px;
+  height: 36px;
+  font-size: 11px;
+}
+
+/* lg: 42px no mobile, 48px no desktop (lista de participantes) */
+.lg {
+  width: 42px;
+  height: 42px;
+  padding-bottom: 3px;
+  font-size: 13px;
+}
+
+@media (min-width: 1200px) {
+  .lg {
+    width: 48px;
+    height: 48px;
+    padding-bottom: 1px;
+    font-size: 15px;
+  }
+}
+
+.host {
+  background: #41232a;
+  border-color: var(--gold);
+  color: var(--gold);
+}

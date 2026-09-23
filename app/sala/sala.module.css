@@ -1,0 +1,238 @@
+/* Base = mobile (referência 390 × 920). Desktop (referência 1440 × 1000) a partir de 1200px. */
+.main {
+  padding-top: 25px;
+}
+
+.intro h1 {
+  margin-top: 17px;
+  font: 400 33px/40px var(--font-serif);
+}
+
+.lead {
+  margin-top: 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* Convite */
+.invite {
+  margin-top: 27px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.code {
+  margin: 14px 0 0;
+  font: 400 34px/40px var(--font-serif);
+}
+
+.copy {
+  --button-h: 46px;
+  margin-top: 11px;
+}
+
+.meta {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+/* Participantes */
+.rosterHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 25px;
+}
+
+.rosterHead h2 {
+  font: 400 24px/30px var(--font-serif);
+}
+
+.rosterHead p {
+  position: relative;
+  top: -4px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 66px;
+}
+
+.who strong,
+.who small {
+  display: block;
+  font-weight: 400;
+}
+
+.who strong {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.who small {
+  margin-top: 5px;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.check {
+  position: relative;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  margin: 0 10px 0 auto;
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.metaMobile {
+  margin-top: 22px;
+  padding-top: 21px;
+  border-top: 1px solid var(--border);
+}
+
+.start {
+  margin-top: 30px;
+}
+
+.start p {
+  margin-top: 16px;
+  color: var(--text-2);
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (min-width: 1200px) {
+  .main {
+    display: grid;
+    grid-template-columns: minmax(0, 533fr) minmax(0, 655fr);
+    column-gap: 84px;
+    align-items: start;
+    padding: 75px 20px 0;
+  }
+
+  .intro {
+    padding-top: 8px;
+  }
+
+  .intro h1 {
+    margin-top: 6px;
+    font-size: 52px;
+    line-height: 62px;
+  }
+
+  .lead {
+    max-width: 470px;
+    margin-top: 7px;
+    font-size: 15px;
+    line-height: 25px;
+  }
+
+  .invite {
+    margin-top: 53px;
+    padding: 32px;
+    border-radius: 16px;
+  }
+
+  .code {
+    margin-top: 10px;
+    font-size: 58px;
+    line-height: 70px;
+  }
+
+  .private {
+    margin-top: 15px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  .copy {
+    --button-h: 52px;
+    margin-top: 30px;
+  }
+
+  .meta {
+    margin-top: 28px;
+  }
+
+  .roster {
+    display: flex;
+    flex-direction: column;
+    min-height: 622px;
+    padding: 17px 36px 57px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #1c1c1f;
+  }
+
+  .rosterHead {
+    display: block;
+    margin-top: 0;
+  }
+
+  .rosterHead h2 {
+    font-size: 30px;
+    line-height: 36px;
+  }
+
+  .rosterHead p {
+    top: 0;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .list {
+    flex: 1;
+    margin: 15px 4px 0 0;
+  }
+
+  .list li {
+    height: 87px;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .who {
+    position: relative;
+    top: -3px;
+  }
+
+  .who small {
+    margin-top: 3px;
+  }
+
+  .check {
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    margin-right: 2px;
+  }
+
+  .start {
+    margin-top: 0;
+  }
+
+  .start p {
+    margin-top: 32px;
+    font-size: 12px;
+  }
+}

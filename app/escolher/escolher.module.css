@@ -1,0 +1,419 @@
+/* Base = mobile (referência 390 × 920). Desktop (referência 1440 × 1000) a partir de 1200px. */
+.main {
+  padding-top: 17px;
+}
+
+/* Barra da sala */
+.bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 16px;
+}
+
+.room {
+  grid-area: 1 / 1;
+  font: 400 17px/22px var(--font-serif);
+}
+
+.inRoom {
+  grid-area: 1 / 2;
+}
+
+.progress {
+  grid-area: 2 / 2;
+}
+
+.inRoom,
+.progress {
+  color: var(--text-2);
+  font-size: 11px;
+  text-align: right;
+}
+
+.round {
+  grid-area: 2 / 1;
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pôster e halo */
+.stage {
+  position: relative;
+  order: 1;
+  margin-top: 23px;
+}
+
+.halo {
+  position: absolute;
+  left: calc(50% - 275px);
+  top: -77px;
+  width: 550px;
+  height: 540px;
+  opacity: 0;
+  transition: opacity 350ms ease;
+  pointer-events: none;
+}
+
+.halo.on {
+  opacity: 1;
+}
+
+.red {
+  background: var(--halo-red);
+}
+
+.amber {
+  background: var(--halo-amber);
+}
+
+.gray {
+  background: var(--halo-gray);
+}
+
+.card {
+  position: relative;
+  width: 204px;
+  margin: 0 auto;
+  cursor: grab;
+  touch-action: pan-y;
+  transition: transform 250ms ease;
+  animation: cardEnter 240ms ease;
+  user-select: none;
+}
+
+.card.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+/* Clone que sai de cena ao "Passar" (botão, teclado ou arraste); some para a
+   esquerda enquanto o próximo pôster já está por baixo. Herda tamanho e posição
+   de .card, mas o movimento é controlado por estilo inline (ver ExitingCard em
+   PickMovie.tsx), para continuar exatamente de onde um arraste foi solto — por
+   isso cancela a animação e a transição herdadas de .card. */
+.exitCard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  animation: none;
+  transition: none;
+  pointer-events: none;
+}
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.poster {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo,
+  .card {
+    transition: none;
+  }
+
+  .card,
+  .exitCard {
+    animation: none;
+  }
+}
+
+/* Detalhes */
+.detail {
+  order: 2;
+  margin-top: 12px;
+}
+
+.detail h1 {
+  font: 400 32px/38px var(--font-serif);
+}
+
+.meta {
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.synopsis {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.where {
+  margin-top: 30px;
+}
+
+.provider {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 13px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.chip {
+  display: grid;
+  place-items: center;
+  width: 118px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+/* Ações */
+.actions {
+  order: 3;
+  margin-top: 33px;
+}
+
+.buttons {
+  --button-h: 56px;
+  display: grid;
+  grid-template-columns: 137fr 193fr;
+  gap: 12px;
+}
+
+.actions p {
+  margin-top: 18px;
+  color: var(--text-2);
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (min-width: 1200px) {
+  .main {
+    padding-top: 31px;
+  }
+
+  .bar {
+    grid-template-columns: auto auto 1fr;
+    column-gap: 69px;
+    row-gap: 0;
+    align-items: baseline;
+  }
+
+  .room {
+    font-size: 23px;
+    line-height: 28px;
+  }
+
+  .round {
+    grid-area: 1 / 2;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+
+  .progress {
+    grid-area: 1 / 3;
+    font-size: 13px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 253px 103px 341px 69px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    margin-top: 38px;
+  }
+
+  /* Painel da turma */
+  .panel {
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+    height: 590px;
+    padding: 27px 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #1c1c1f;
+  }
+
+  .panel ul {
+    margin: 3px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .panel li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 73px;
+  }
+
+  .panel strong,
+  .panel small {
+    display: block;
+    font-weight: 400;
+  }
+
+  .panel strong {
+    font-size: 14px;
+  }
+
+  .panel li > span {
+    position: relative;
+    top: 4px;
+  }
+
+  .panel small {
+    margin-top: 3px;
+    color: var(--text-2);
+    font-size: 11px;
+  }
+
+  .motto {
+    margin-top: 21px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+
+  .motto p:first-child {
+    font: 400 20px/26px var(--font-serif);
+  }
+
+  .motto p:nth-child(2) {
+    margin-top: 4px;
+    font: 400 18px/26px var(--font-serif);
+  }
+
+  .motto small {
+    display: block;
+    margin-top: 18px;
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 21px;
+  }
+
+  .filters {
+    margin-top: auto;
+    padding-bottom: 46px;
+  }
+
+  /* Pôster */
+  .stage {
+    grid-column: 3;
+    grid-row: 1;
+    order: 0;
+    margin: 6px 0 0;
+    width: 312px;
+  }
+
+  .halo {
+    left: -132px;
+    top: -77px;
+    width: 620px;
+    height: 760px;
+  }
+
+  .card {
+    width: 312px;
+    margin: 0;
+  }
+
+  /* Ações */
+  .actions {
+    grid-column: 3;
+    grid-row: 2;
+    order: 0;
+    margin: 36px 0 0;
+  }
+
+  .buttons {
+    grid-template-columns: 147px 180px;
+    gap: 14px;
+    margin-left: -2px;
+  }
+
+  .actions p {
+    margin-top: 32px;
+    font-size: 12px;
+  }
+
+  .actions p span {
+    margin: 0 17px;
+  }
+
+  /* Detalhes */
+  .detail {
+    grid-column: 5;
+    grid-row: 1 / span 2;
+    order: 0;
+    max-width: 482px;
+    padding-top: 42px;
+  }
+
+  .suggest {
+    display: block;
+  }
+
+  .detail h1 {
+    margin-top: 12px;
+    font-size: 49px;
+    line-height: 60px;
+  }
+
+  .meta {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .synopsis {
+    margin-top: 22px;
+    max-width: 420px;
+    padding-top: 29px;
+    border-top: 1px solid var(--border);
+    font-size: 18px;
+    line-height: 29px;
+  }
+
+  .where {
+    margin-top: 63px;
+  }
+
+  .provider {
+    display: block;
+    margin-top: 18px;
+    font-size: 14px;
+  }
+
+  .chip {
+    width: 132px;
+  }
+
+  .provider > span:last-child {
+    display: block;
+    margin-top: 13px;
+  }
+
+  .more {
+    margin-top: 42px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--gold);
+    font: 14px var(--font-sans);
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}

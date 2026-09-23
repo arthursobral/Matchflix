@@ -5,6 +5,7 @@ docs/
 
 # Skills e ferramentas de agente
 .claude/skills/
+.agents/
 skills-lock.json
 .playwright/
 
@@ -29,3 +30,7 @@ Thumbs.db
 
 # Pacote de design aprovado (referência local)
 Matchflix-Design-Aprovado-v1/
+
+# Next.js / TypeScript
+next-env.d.ts
+*.tsbuildinfo

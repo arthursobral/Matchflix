@@ -1,0 +1,68 @@
+:root {
+  --bg: #161618;
+  --surface: #222225;
+  --border: #3b3839;
+  --text: #eeecea;
+  --text-2: #aaa5a1;
+  --accent: #a52a3a;
+  --gold: #b99a63;
+  /* Halos ao redor do pôster: vermelho, âmbar e cinza (cores do design aprovado) */
+  --halo-red: radial-gradient(closest-side, rgb(186 53 72 / 0.3), rgb(154 44 60 / 0.12) 55%, rgb(22 22 24 / 0));
+  --halo-amber: radial-gradient(closest-side, rgb(216 154 58 / 0.34), rgb(166 108 39 / 0.12) 58%, rgb(22 22 24 / 0));
+  --halo-gray: radial-gradient(closest-side, rgb(208 208 202 / 0.25), rgb(136 136 138 / 0.08) 60%, rgb(22 22 24 / 0));
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1199px) {
+  .desktop-only {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .mobile-only {
+    display: none;
+  }
+}
