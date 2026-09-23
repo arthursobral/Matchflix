@@ -11,7 +11,6 @@ export const ptBR = {
     createRoom: "Criar uma sala",
     joinWithCode: "Entrar com código",
     noSignup: "Sem cadastro obrigatório. Convide por um simples link.",
-    noSignupMobile: "Grátis para começar · Sem cadastro obrigatório",
     company: "Boa companhia. Bom filme.",
     crew: { title: "Uma noite. Todos a bordo.", subtitle: "O próximo favorito é de vocês." },
     steps: [

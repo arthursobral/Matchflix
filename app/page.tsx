@@ -49,7 +49,6 @@ export default function Home() {
             </Button>
           </div>
           <p className={`${styles.note} desktop-only`}>{t.home.noSignup}</p>
-          <p className={`${styles.note} mobile-only`}>{t.home.noSignupMobile}</p>
         </div>
       </main>
 

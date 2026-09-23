@@ -152,3 +152,26 @@ test("mobile: não há rolagem horizontal em nenhuma tela", async ({ page }) => 
     expect(overflow, `rolagem horizontal em ${path}`).toBeLessThanOrEqual(0);
   }
 });
+
+test("o rodapé não fica com um vão gigante num aparelho mais alto que a referência do design", async ({ page }) => {
+  // Achado pelo usuário testando num iPhone 16 Pro Max: um .page com min-height: 100vh e
+  // footer com margin-top: auto gruda o rodapé no fim da viewport, e num aparelho bem mais
+  // alto que os 920px de referência isso vira um vão vazio enorme entre o conteúdo e o rodapé.
+  await page.setViewportSize({ width: 390, height: 1400 });
+  for (const path of ["/", "/criar", "/sala", "/escolher", "/match"]) {
+    await page.goto(path);
+    const gap = await page.evaluate(() => {
+      const footerEl = document.querySelector("footer")!;
+      const footer = footerEl.getBoundingClientRect();
+      // Maior "bottom" entre os irmãos visíveis antes do rodapé (a Início tem uma seção
+      // oculta no mobile via display:none, que não deve contar como o fim do conteúdo).
+      const bottoms = [...footerEl.parentElement!.children]
+        .filter((el) => el !== footerEl && el.tagName !== "HEADER")
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.width > 0 && r.height > 0)
+        .map((r) => r.bottom);
+      return Math.round(footer.top - Math.max(0, ...bottoms));
+    });
+    expect(gap, `vão acima do rodapé em ${path}`).toBeLessThanOrEqual(100);
+  }
+});

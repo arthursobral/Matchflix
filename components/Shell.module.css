@@ -1,8 +1,10 @@
-/* Base = mobile (referência 390 × 920). Desktop (referência 1440 × 1000) a partir de 1200px. */
+/* Base = mobile (referência 390 × 920). Desktop (referência 1440 × 1000) a partir de 1200px.
+   A página segue a altura do conteúdo (sem min-height: 100vh): num aparelho mais alto que a
+   referência do design, um rodapé "grudado" no fim da viewport (via margin-top: auto) deixaria
+   um vão gigante entre o conteúdo e o rodapé. O espaço acima do rodapé é fixo (ver .footer). */
 .page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   width: min(560px, 100%);
   margin: 0 auto;
   padding: 0 24px;
@@ -33,8 +35,8 @@
 }
 
 .footer {
-  margin-top: auto;
-  padding: 24px 0 21px;
+  margin-top: 56px;
+  padding: 0 0 21px;
   color: var(--text-2);
   font-size: 10px;
   text-align: center;
@@ -86,6 +88,7 @@
   }
 
   .footer {
-    padding: 56px 0 38px;
+    margin-top: 56px;
+    padding: 0 0 38px;
   }
 }
