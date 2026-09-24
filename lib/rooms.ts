@@ -16,12 +16,24 @@ export type RoomRef = { roomId: string; code: string; participantId: string };
 export class RoomNotFoundError extends Error {}
 export class RoomExpiredError extends Error {}
 
-/** Formato de retorno de create_room/join_room, até termos tipos gerados do schema. */
-type RoomRefRow = { room_id: string; code: string; participant_id: string };
+/**
+ * Formato de retorno de create_room/join_room, até termos tipos gerados do schema.
+ * Nomes prefixados (out_*) de propósito, para nunca colidir com uma coluna de
+ * verdade dentro da função em SQL (ver migração 20260923150000).
+ */
+type RoomRefRow = { out_room_id: string; out_code: string; out_participant_id: string };
 
 /** "MFX824" → "MFX 824", como no design. */
 export function formatRoomCode(code: string) {
   return `${code.slice(0, 3)} ${code.slice(3)}`;
+}
+
+/** Duas iniciais para o avatar a partir do apelido ("Arthur Sobral" → "AS", "Lucas" → "LU"). */
+export function initialsOf(nickname: string): string {
+  const parts = nickname.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
 // TODO(M2+): gerar tipos com `supabase gen types typescript` assim que o projeto
@@ -40,7 +52,7 @@ export async function createRoom(input: CreateRoomInput): Promise<RoomRef> {
     .single();
   if (error) throw new Error(error.message);
   const row = data as RoomRefRow;
-  return { roomId: row.room_id, code: row.code, participantId: row.participant_id };
+  return { roomId: row.out_room_id, code: row.out_code, participantId: row.out_participant_id };
 }
 
 export async function joinRoom(code: string, nickname: string): Promise<RoomRef> {
@@ -52,7 +64,7 @@ export async function joinRoom(code: string, nickname: string): Promise<RoomRef>
     throw new Error(error.message);
   }
   const row = data as RoomRefRow;
-  return { roomId: row.room_id, code: row.code, participantId: row.participant_id };
+  return { roomId: row.out_room_id, code: row.out_code, participantId: row.out_participant_id };
 }
 
 export type Room = {

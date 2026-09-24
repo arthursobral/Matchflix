@@ -61,8 +61,20 @@ export const ptBR = {
     },
     submit: "Criar sala e convidar",
     submitNote: "Os filtros podem ser ajustados depois.",
+    nickname: {
+      title: "Como podemos te chamar?",
+      lead: "Seu apelido aparece pra sua turma na sala.",
+      label: "Seu apelido",
+      placeholder: "Ex.: Arthur",
+      confirm: "Criar sala",
+      busy: "Criando…",
+      cancel: "Voltar",
+    },
   },
   room: {
+    allGenres: "Todos os gêneros",
+    notFound: "Sala não encontrada ou expirada.",
+    loading: "Carregando…",
     eyebrow: "02 / Reúna sua turma",
     lead: "Compartilhe o convite. Quando todos estiverem aqui, a escolha pode começar.",
     leadMobile: "A melhor parte do filme é a companhia.",
@@ -108,6 +120,20 @@ export const ptBR = {
     caption: "A sessão de hoje já tem um favorito.",
     watch: "Ver opções para assistir",
     keepGoing: "Continuar escolhendo",
+  },
+  join: {
+    // Tela provisória: o design ainda não foi aprovado (ver docs/m2-criar-entrar-salas.md).
+    // Reaproveita só os tokens e componentes já aprovados, sem inventar layout novo.
+    eyebrow: "Entrar na sala",
+    title: "Cole o código ou o link que te mandaram.",
+    codeLabel: "Código da sala",
+    codePlaceholder: "MFX824",
+    nicknameLabel: "Seu apelido",
+    nicknamePlaceholder: "Ex.: Lucas",
+    submit: "Juntar-se",
+    busy: "Entrando…",
+    notFound: "Não achamos essa sala. Confira o código.",
+    expired: "Essa sala expirou.",
   },
   footer: "Uma escolha em comum. Uma noite de cinema.",
 } as const;

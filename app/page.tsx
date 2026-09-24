@@ -44,7 +44,7 @@ export default function Home() {
             <Button icon="arrow" href="/criar">
               {t.home.createRoom}
             </Button>
-            <Button icon="link" variant="secondary" unavailableHint={t.nav.soon}>
+            <Button icon="link" variant="secondary" href="/entrar">
               {t.home.joinWithCode}
             </Button>
           </div>

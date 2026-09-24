@@ -14,7 +14,8 @@ export async function ensureAnonymousSession(): Promise<string> {
 
   const { data, error } = await supabase.auth.signInAnonymously();
   if (error || !data.user) {
-    throw new Error("Não foi possível iniciar a sessão. Verifique se o login anônimo está habilitado no projeto Supabase.");
+    const reason = error?.message ?? "resposta sem usuário";
+    throw new Error(`Não foi possível iniciar a sessão (${reason}). Verifique a URL/chave do Supabase e se o login anônimo está habilitado.`);
   }
   return data.user.id;
 }
