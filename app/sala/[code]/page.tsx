@@ -70,6 +70,16 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (!room) return;
+    // Ninguém avisa a hora certa em que a sala expira (não é uma mudança no banco) — um
+    // temporizador garante que quem já está dentro seja avisado mesmo sem nenhum outro
+    // evento em tempo real acontecer nesse meio-tempo.
+    const ms = new Date(room.expiresAt).getTime() - Date.now();
+    const id = setTimeout(() => setError(r.notFound), Math.max(ms, 0));
+    return () => clearTimeout(id);
+  }, [room]);
+
+  useEffect(() => {
+    if (!room) return;
     return subscribeToRoom(room.id, () => {
       getRoomByCode(code).then((result) => {
         if (result?.room.status === "voting") router.push(`/escolher/${code}`);

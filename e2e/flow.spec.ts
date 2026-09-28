@@ -144,6 +144,20 @@ test.describe("Início de rodada", () => {
   });
 });
 
+test.describe("Reconexão", () => {
+  test("entrar de novo com a mesma sessão não duplica o participante", async ({ page, browser }) => {
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+
+    const code = await createTestRoom(page);
+    const guestPage = await (await browser.newContext()).newPage();
+    await joinTestRoom(guestPage, code, "Convidado");
+    await joinTestRoom(guestPage, code, "Convidado"); // mesma sessão (mesmo contexto), entra de novo
+
+    await page.reload();
+    await expect(page.locator("li")).toHaveCount(2);
+  });
+});
+
 test.describe("Escolher filme", () => {
   const counter = (n: number) => `0${n} / 20 filmes`;
 

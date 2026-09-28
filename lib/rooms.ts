@@ -76,6 +76,7 @@ export type Room = {
   genres: string[];
   hostUserId: string;
   status: "lobby" | "voting" | "ended";
+  expiresAt: string;
 };
 
 export type Participant = {
@@ -90,7 +91,9 @@ export async function getRoomByCode(code: string): Promise<{ room: Room; partici
   const supabase = getSupabase();
   const { data: room, error } = await supabase.from("rooms").select("*").eq("code", code.toUpperCase()).maybeSingle();
   if (error) throw new Error(error.message);
-  if (!room) return null;
+  // Sala encerrada ou expirada: tratada como inexistente (mesma mensagem já usada para
+  // código inválido — quem já estava dentro é avisado assim que a tela buscar de novo).
+  if (!room || room.status === "ended" || new Date(room.expires_at) < new Date()) return null;
 
   const { data: participants, error: pError } = await supabase
     .from("participants")
@@ -110,6 +113,7 @@ export async function getRoomByCode(code: string): Promise<{ room: Room; partici
       genres: room.genres,
       hostUserId: room.host_user_id,
       status: room.status,
+      expiresAt: room.expires_at,
     },
     participants: (participants ?? []).map((p) => ({
       id: p.id,
