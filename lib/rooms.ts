@@ -149,8 +149,36 @@ export function subscribeToRoom(roomId: string, onChange: () => void): () => voi
   };
 }
 
-/** Só o anfitrião consegue iniciar a rodada — verificado no servidor (função `security definer`). */
-export async function startRound(roomId: string): Promise<void> {
-  const { error } = await getSupabase().rpc("start_round", { p_room_id: roomId });
+/**
+ * Só o anfitrião consegue iniciar a rodada — verificado no servidor (função `security
+ * definer`). `movieIds` é o baralho candidato (hoje, os filmes fictícios do M1); o
+ * servidor embaralha e grava a ordem, a mesma para todos os participantes.
+ */
+export async function startRound(roomId: string, movieIds: string[]): Promise<void> {
+  const { error } = await getSupabase().rpc("start_round", { p_room_id: roomId, p_movie_ids: movieIds });
   if (error) throw new Error(error.message);
+}
+
+/** Baralho da rodada aberta da sala (mesma ordem para todos). `null` se ainda não houver rodada. */
+export async function getActiveRound(roomId: string): Promise<{ id: string; movieIds: string[] } | null> {
+  const supabase = getSupabase();
+  const { data: round, error } = await supabase
+    .from("rounds")
+    .select("id")
+    .eq("room_id", roomId)
+    .eq("status", "open")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!round) return null;
+
+  const { data: movies, error: mError } = await supabase
+    .from("round_movies")
+    .select("movie_id")
+    .eq("round_id", round.id)
+    .order("position", { ascending: true });
+  if (mError) throw new Error(mError.message);
+
+  return { id: round.id, movieIds: (movies ?? []).map((m) => m.movie_id as string) };
 }

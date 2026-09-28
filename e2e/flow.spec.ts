@@ -20,7 +20,7 @@ test("percorre as 5 telas em sequência", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Cinema de sexta");
 
   await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
-  await expect(page).toHaveURL(/\/escolher$/);
+  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/);
 
   await page.getByRole("button", { name: /Quero assistir/ }).click();
   await expect(page).toHaveURL(/\/match$/);
@@ -122,8 +122,12 @@ test.describe("Início de rodada", () => {
 
     await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
 
-    await expect(page).toHaveURL(/\/escolher$/);
-    await expect(guestPage).toHaveURL(/\/escolher$/);
+    await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`));
+    await expect(guestPage).toHaveURL(new RegExp(`/escolher/${code}$`));
+
+    // Mesmo baralho, mesma ordem: o primeiro filme é o mesmo para os dois.
+    const hostTitle = await page.getByRole("heading", { level: 1 }).textContent();
+    await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!);
   });
 
   test("quem não é anfitrião não consegue iniciar a rodada", async ({ page, browser }) => {

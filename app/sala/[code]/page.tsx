@@ -16,6 +16,7 @@ import {
   type Room,
 } from "@/lib/rooms";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
+import { demoMovies } from "@/lib/demo-movies";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
 
@@ -71,7 +72,7 @@ export default function RoomPage() {
     if (!room) return;
     return subscribeToRoom(room.id, () => {
       getRoomByCode(code).then((result) => {
-        if (result?.room.status === "voting") router.push("/escolher");
+        if (result?.room.status === "voting") router.push(`/escolher/${code}`);
       });
     });
   }, [room, code, router]);
@@ -81,7 +82,10 @@ export default function RoomPage() {
     setStarting(true);
     setStartError(null);
     try {
-      await startRound(room.id);
+      await startRound(
+        room.id,
+        demoMovies.map((m) => m.id),
+      );
     } catch (e) {
       setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
     } finally {

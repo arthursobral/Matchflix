@@ -15,9 +15,16 @@ const TOTAL = 20;
 const FIRST = 4;
 const SWIPE_DISTANCE = 90;
 
-export function PickMovie() {
+type Props = {
+  /** Ids de `demoMovies`, na ordem da rodada. Sem isso, usa a ordem fixa de demonstração. */
+  movieIds?: string[];
+};
+
+export function PickMovie({ movieIds }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const filtered = movieIds?.map((id) => demoMovies.find((m) => m.id === id)).filter((m): m is (typeof demoMovies)[number] => m !== undefined);
+  const movies = filtered && filtered.length > 0 ? filtered : demoMovies;
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
@@ -32,7 +39,7 @@ export function PickMovie() {
   // atual, não de um capturado por um useCallback com deps vazias.
   const [exit, setExit] = useState<{ key: number; poster: (typeof demoMovies)[number]["poster"]; fromDx: number } | null>(null);
 
-  const movie = demoMovies[step % demoMovies.length];
+  const movie = movies[step % movies.length];
   const movieRef = useRef(movie);
   useEffect(() => {
     movieRef.current = movie;
@@ -100,7 +107,7 @@ export function PickMovie() {
         </aside>
 
         <div className={styles.stage}>
-          {demoMovies.map((m) => (
+          {movies.map((m) => (
             <div key={m.id} className={`${styles.halo} ${styles[m.halo]} ${m.id === movie.id ? styles.on : ""}`} aria-hidden="true" />
           ))}
           {exit && <ExitingCard key={exit.key} poster={exit.poster} fromDx={exit.fromDx} onDone={() => setExit(null)} />}
