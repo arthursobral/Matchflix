@@ -5,7 +5,16 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { CopyInviteButton } from "@/components/CopyInviteButton";
-import { getRoomByCode, formatRoomCode, initialsOf, type Participant, type Room } from "@/lib/rooms";
+import {
+  getRoomByCode,
+  formatRoomCode,
+  initialsOf,
+  startRound,
+  subscribeToParticipants,
+  subscribeToRoom,
+  type Participant,
+  type Room,
+} from "@/lib/rooms";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
@@ -28,6 +37,8 @@ export default function RoomPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +59,35 @@ export default function RoomPage() {
       cancelled = true;
     };
   }, [code]);
+
+  useEffect(() => {
+    if (!room) return;
+    return subscribeToParticipants(room.id, () => {
+      getRoomByCode(code).then((result) => result && setParticipants(result.participants));
+    });
+  }, [room, code]);
+
+  useEffect(() => {
+    if (!room) return;
+    return subscribeToRoom(room.id, () => {
+      getRoomByCode(code).then((result) => {
+        if (result?.room.status === "voting") router.push("/escolher");
+      });
+    });
+  }, [room, code, router]);
+
+  async function handleStart() {
+    if (!room || starting) return;
+    setStarting(true);
+    setStartError(null);
+    try {
+      await startRound(room.id);
+    } catch (e) {
+      setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
+    } finally {
+      setStarting(false);
+    }
+  }
 
   // Estados de carregamento e erro ainda não têm design aprovado (M1); texto simples por ora.
   if (error) return <main className={styles.main}>{error}</main>;
@@ -105,12 +145,17 @@ export default function RoomPage() {
         </p>
 
         <div className={styles.start}>
-          {/* M2: início real da rodada (com permissão do anfitrião) é do M3; por ora navega para a demonstração. */}
-          <Button icon="arrow" onClick={() => router.push("/escolher")}>
+          <Button icon="arrow" onClick={handleStart}>
             {r.start}
           </Button>
-          <p className="desktop-only">{r.startNote}</p>
-          <p className="mobile-only">{r.startNoteMobile}</p>
+          {startError ? (
+            <p role="alert">{startError}</p>
+          ) : (
+            <>
+              <p className="desktop-only">{r.startNote}</p>
+              <p className="mobile-only">{r.startNoteMobile}</p>
+            </>
+          )}
         </div>
       </section>
     </main>

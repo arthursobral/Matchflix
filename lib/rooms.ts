@@ -85,7 +85,7 @@ export type Participant = {
   isHost: boolean;
 };
 
-/** Busca a sala pelo código. A lista de participantes ainda não é ao vivo — isso é do M3. */
+/** Busca a sala e a lista de participantes pelo código. */
 export async function getRoomByCode(code: string): Promise<{ room: Room; participants: Participant[] } | null> {
   const supabase = getSupabase();
   const { data: room, error } = await supabase.from("rooms").select("*").eq("code", code.toUpperCase()).maybeSingle();
@@ -118,4 +118,39 @@ export async function getRoomByCode(code: string): Promise<{ room: Room; partici
       isHost: p.is_host,
     })),
   };
+}
+
+/**
+ * Assina mudanças na lista de participantes de uma sala (entrada, saída, apelido).
+ * Chama `onChange` a cada evento; quem chama decide o que refazer (aqui, buscar a
+ * sala de novo — a lista é pequena, não vale a pena remontar o estado a partir do payload).
+ * Também chama `onChange` assim que a conexão é confirmada (`SUBSCRIBED`), para pegar
+ * qualquer mudança que tenha acontecido nesse meio-tempo entre a busca inicial e a
+ * inscrição ficar de fato ativa — sem isso, uma mudança nessa janela nunca chega.
+ */
+export function subscribeToParticipants(roomId: string, onChange: () => void): () => void {
+  const channel = getSupabase()
+    .channel(`room:${roomId}:participants`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "participants", filter: `room_id=eq.${roomId}` }, onChange)
+    .subscribe((status) => status === "SUBSCRIBED" && onChange());
+  return () => {
+    getSupabase().removeChannel(channel);
+  };
+}
+
+/** Assina mudanças na própria sala (hoje, só o início de rodada muda `status`); mesma reconciliação ao conectar (ver `subscribeToParticipants`). */
+export function subscribeToRoom(roomId: string, onChange: () => void): () => void {
+  const channel = getSupabase()
+    .channel(`room:${roomId}:status`)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` }, onChange)
+    .subscribe((status) => status === "SUBSCRIBED" && onChange());
+  return () => {
+    getSupabase().removeChannel(channel);
+  };
+}
+
+/** Só o anfitrião consegue iniciar a rodada — verificado no servidor (função `security definer`). */
+export async function startRound(roomId: string): Promise<void> {
+  const { error } = await getSupabase().rpc("start_round", { p_room_id: roomId });
+  if (error) throw new Error(error.message);
 }
