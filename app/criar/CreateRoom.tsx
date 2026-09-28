@@ -1,7 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/Button";
+import { NicknamePrompt } from "@/components/NicknamePrompt";
+import { createRoom } from "@/lib/rooms";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./create.module.css";
 
@@ -17,9 +20,22 @@ function toggleGenre(current: string[], value: string) {
 }
 
 export function CreateRoom() {
+  const router = useRouter();
   const [name, setName] = useState<string>(c.roomName.defaultValue);
   const [mode, setMode] = useState<string>(c.mode.options[0].value);
   const [genres, setGenres] = useState<string[]>([c.genres.all]);
+  const [showNickname, setShowNickname] = useState(false);
+
+  async function handleCreate(nickname: string) {
+    const room = await createRoom({
+      name,
+      country: c.country.options[0].value,
+      mode: mode as "same_home" | "remote",
+      genres: genres.includes(c.genres.all) ? [] : genres,
+      nickname,
+    });
+    router.push(`/sala/${room.code}`);
+  }
 
   return (
     <main className={styles.main}>
@@ -121,13 +137,26 @@ export function CreateRoom() {
         <p className={`${styles.help} desktop-only`}>{c.genres.help}</p>
 
         <div className={styles.submit}>
-          {/* M1: navegação de demonstração; a criação real da sala é do M2. */}
-          <Button icon="arrow" href="/sala">
+          <Button icon="arrow" onClick={() => setShowNickname(true)}>
             {c.submit}
           </Button>
           <p className={`${styles.submitNote} mobile-only`}>{c.submitNote}</p>
         </div>
       </div>
+
+      {showNickname && (
+        <NicknamePrompt
+          title={c.nickname.title}
+          lead={c.nickname.lead}
+          label={c.nickname.label}
+          placeholder={c.nickname.placeholder}
+          confirmLabel={c.nickname.confirm}
+          busyLabel={c.nickname.busy}
+          cancelLabel={c.nickname.cancel}
+          onConfirm={handleCreate}
+          onCancel={() => setShowNickname(false)}
+        />
+      )}
     </main>
   );
 }

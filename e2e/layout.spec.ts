@@ -1,4 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { hasSupabase } from "../playwright.config";
+import { createTestRoom, joinTestRoom } from "./helpers";
 
 /**
  * Confere as caixas dos elementos contra as coordenadas do design aprovado
@@ -28,7 +30,7 @@ const desktop: Screen[] = [
     path: "/",
     checks: [
       { name: "Criar uma sala", find: link("Criar uma sala"), box: [84, 526, 244, 52] },
-      { name: "Entrar com código", find: button("Entrar com código"), box: [344, 526, 244, 52] },
+      { name: "Entrar com código", find: link("Entrar com código"), box: [344, 526, 244, 52] },
       { name: "pôster Horizonte", find: alt("Horizonte"), box: [927, 167, 260, 376] },
     ],
   },
@@ -37,14 +39,14 @@ const desktop: Screen[] = [
     checks: [
       { name: "campo nome", find: label("Nome da sala"), box: [670, 191, 650, 52] },
       { name: "pílula Todos", find: label("Todos"), box: [670, 501, 152, 34] },
-      { name: "Criar sala e convidar", find: link("Criar sala e convidar"), box: [670, 731, 650, 52] },
+      { name: "Criar sala e convidar", find: button("Criar sala e convidar"), box: [670, 731, 650, 52] },
     ],
   },
   {
     path: "/sala",
     checks: [
       { name: "Copiar link de convite", find: button("Copiar link de convite"), box: [116, 584, 469, 52] },
-      { name: "Todos aqui? Começar", find: link("Todos aqui? Começar"), box: [737, 624, 583, 52] },
+      { name: "Todos aqui? Começar", find: button("Todos aqui? Começar"), box: [737, 624, 583, 52] },
     ],
   },
   {
@@ -70,7 +72,7 @@ const mobile: Screen[] = [
     path: "/",
     checks: [
       { name: "Criar uma sala", find: link("Criar uma sala"), box: [24, 652, 342, 52] },
-      { name: "Entrar com código", find: button("Entrar com código"), box: [24, 716, 342, 52] },
+      { name: "Entrar com código", find: link("Entrar com código"), box: [24, 716, 342, 52] },
       { name: "pôster Horizonte", find: alt("Horizonte"), box: [105, 331, 180, 260] },
     ],
   },
@@ -79,14 +81,14 @@ const mobile: Screen[] = [
     checks: [
       { name: "campo nome", find: label("Nome da sala"), box: [24, 272, 342, 52] },
       { name: "pílula Todos", find: label("Todos"), box: [24, 554, 108, 34] },
-      { name: "Criar sala e convidar", find: link("Criar sala e convidar"), box: [24, 759, 342, 52] },
+      { name: "Criar sala e convidar", find: button("Criar sala e convidar"), box: [24, 759, 342, 52] },
     ],
   },
   {
     path: "/sala",
     checks: [
       { name: "Copiar link de convite", find: button("Copiar link de convite"), box: [48, 360, 294, 46] },
-      { name: "Todos aqui? Começar", find: link("Todos aqui? Começar"), box: [24, 780, 342, 52] },
+      { name: "Todos aqui? Começar", find: button("Todos aqui? Começar"), box: [24, 780, 342, 52] },
     ],
   },
   {
@@ -125,8 +127,18 @@ for (const [device, viewport, screens] of [
     test.use({ viewport });
 
     for (const screen of screens) {
-      test(`${screen.path} confere com o design aprovado`, async ({ page }) => {
-        await page.goto(screen.path);
+      test(`${screen.path} confere com o design aprovado`, async ({ page, browser }) => {
+        if (screen.path === "/sala") {
+          test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+          const code = await createTestRoom(page); // já deixa a página em /sala/<código>
+          // O design de referência mostra 3 participantes; replica isso para as posições
+          // (que dependem da altura da lista) baterem com o mockup.
+          await joinTestRoom(await (await browser.newContext()).newPage(), code, "Lucas");
+          await joinTestRoom(await (await browser.newContext()).newPage(), code, "Bruno");
+          await page.reload(); // sem realtime ainda (M3); o anfitrião só vê depois de recarregar
+        } else {
+          await page.goto(screen.path);
+        }
         for (const check of screen.checks) {
           await test.step(check.name, async () => expectBox(check.find(page), check.box));
         }
@@ -135,9 +147,16 @@ for (const [device, viewport, screens] of [
   });
 }
 
+async function screenPaths(page: Page): Promise<string[]> {
+  const paths = ["/", "/criar", "/escolher", "/match"];
+  // "/sala" precisa de uma sala de verdade; sem Supabase configurado, pula esse caminho.
+  if (hasSupabase) paths.splice(2, 0, `/sala/${await createTestRoom(page)}`);
+  return paths;
+}
+
 test("desktop: não há rolagem horizontal em nenhuma tela", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  for (const path of ["/", "/criar", "/sala", "/escolher", "/match"]) {
+  for (const path of await screenPaths(page)) {
     await page.goto(path);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, `rolagem horizontal em ${path}`).toBeLessThanOrEqual(0);
@@ -146,7 +165,7 @@ test("desktop: não há rolagem horizontal em nenhuma tela", async ({ page }) =>
 
 test("mobile: não há rolagem horizontal em nenhuma tela", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 920 });
-  for (const path of ["/", "/criar", "/sala", "/escolher", "/match"]) {
+  for (const path of await screenPaths(page)) {
     await page.goto(path);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, `rolagem horizontal em ${path}`).toBeLessThanOrEqual(0);
@@ -158,7 +177,7 @@ test("o rodapé não fica com um vão gigante num aparelho mais alto que a refer
   // footer com margin-top: auto gruda o rodapé no fim da viewport, e num aparelho bem mais
   // alto que os 920px de referência isso vira um vão vazio enorme entre o conteúdo e o rodapé.
   await page.setViewportSize({ width: 390, height: 1400 });
-  for (const path of ["/", "/criar", "/sala", "/escolher", "/match"]) {
+  for (const path of await screenPaths(page)) {
     await page.goto(path);
     const gap = await page.evaluate(() => {
       const footerEl = document.querySelector("footer")!;

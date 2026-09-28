@@ -1,19 +1,25 @@
 import { expect, test } from "@playwright/test";
+import { hasSupabase } from "../playwright.config";
+import { createTestRoom } from "./helpers";
 
 test.use({ viewport: { width: 1440, height: 1000 }, permissions: ["clipboard-read", "clipboard-write"] });
 
 test("percorre as 5 telas em sequência", async ({ page }) => {
+  test.skip(!hasSupabase, "criar/entrar em sala precisa de um projeto Supabase configurado (.env.local)");
+
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /Menos indecisão/ })).toBeVisible();
 
   await page.getByRole("link", { name: "Criar uma sala" }).click();
   await expect(page).toHaveURL(/\/criar$/);
 
-  await page.getByRole("link", { name: "Criar sala e convidar" }).click();
-  await expect(page).toHaveURL(/\/sala$/);
-  await expect(page.getByText("MFX 824")).toBeVisible();
+  await page.getByRole("button", { name: "Criar sala e convidar" }).click();
+  await page.getByLabel("Seu apelido", { exact: true }).fill("Teste");
+  await page.getByRole("button", { name: "Criar sala", exact: true }).click();
+  await expect(page).toHaveURL(/\/sala\/MFX\d{3}$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Cinema de sexta");
 
-  await page.getByRole("link", { name: "Todos aqui? Começar" }).click();
+  await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
   await expect(page).toHaveURL(/\/escolher$/);
 
   await page.getByRole("button", { name: /Quero assistir/ }).click();
@@ -67,12 +73,44 @@ test.describe("Criar sala", () => {
 });
 
 test("Sala de espera: copiar link de convite usa a área de transferência", async ({ page }) => {
-  await page.goto("/sala");
+  test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+  const code = await createTestRoom(page);
+
   await page.getByRole("button", { name: "Copiar link de convite" }).click();
   await expect(page.getByRole("button", { name: "Link copiado" })).toBeVisible();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toMatch(/\/entrar\?codigo=MFX824$/);
+  expect(copied).toBe(`http://localhost:3100/entrar?codigo=${code}`);
   await expect(page.getByRole("button", { name: "Copiar link de convite" })).toBeVisible();
+});
+
+test.describe("Entrar por código", () => {
+  test("duas pessoas em sessões diferentes entram na mesma sala", async ({ page, browser }) => {
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+
+    const code = await createTestRoom(page, "Sala compartilhada");
+    await expect(page.locator("li strong")).toHaveText([/Teste · Você/]);
+
+    // Segunda pessoa: sessão (contexto) totalmente separada, como um outro aparelho.
+    const guestPage = await (await browser.newContext()).newPage();
+    await guestPage.goto(`/entrar?codigo=${code}`);
+    await expect(guestPage.getByLabel("Código da sala")).toHaveValue(code);
+    await guestPage.getByLabel("Seu apelido", { exact: true }).fill("Convidado");
+    await guestPage.getByRole("button", { name: "Juntar-se" }).click();
+    await expect(guestPage).toHaveURL(new RegExp(`/sala/${code}$`));
+    await expect(guestPage.locator("li strong")).toHaveText([/Teste/, /Convidado · Você/]);
+
+    // Sem realtime ainda (isso é do M3): o anfitrião só vê o convidado depois de recarregar.
+    await page.reload();
+    await expect(page.locator("li strong")).toHaveText([/Teste · Você/, /Convidado/]);
+  });
+
+  test("código inexistente mostra mensagem clara", async ({ page }) => {
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+    await page.goto("/entrar?codigo=MFX000");
+    await page.getByLabel("Seu apelido", { exact: true }).fill("Alguém");
+    await page.getByRole("button", { name: "Juntar-se" }).click();
+    await expect(page.locator('p[role="alert"]')).toHaveText("Não achamos essa sala. Confira o código.");
+  });
 });
 
 test.describe("Escolher filme", () => {
@@ -141,6 +179,7 @@ test("Match: 'Ver opções para assistir' avisa que ainda não existe", async ({
 
 test("botões sem função ficam marcados como indisponíveis", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Entrar com código" })).toHaveAttribute("aria-disabled", "true");
   await expect(page.getByRole("button", { name: "Brasil · PT" })).toHaveAttribute("aria-disabled", "true");
+  // "Entrar com código" já tem função (M2): é um link de verdade para /entrar.
+  await expect(page.getByRole("link", { name: "Entrar com código" })).toHaveAttribute("href", "/entrar");
 });
