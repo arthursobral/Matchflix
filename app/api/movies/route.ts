@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const exclude = Array.isArray(body.exclude) ? body.exclude : [];
 
   if (!process.env.TMDB_API_KEY) {
-    return NextResponse.json({ movieIds: demoMovies.map((m) => m.id) });
+    return NextResponse.json({ movieIds: demoMovies.map((m) => m.id).filter((id) => !exclude.includes(id)) });
   }
 
   try {

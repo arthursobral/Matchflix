@@ -5,11 +5,12 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { CopyInviteButton } from "@/components/CopyInviteButton";
+import { countryLabel, genresLabel } from "@/lib/labels";
 import {
+  DeckExhaustedError,
   getRoomByCode,
-  getUsedMovieIds,
   initialsOf,
-  startRound,
+  startNextRound,
   subscribeToParticipants,
   subscribeToRoom,
   type Participant,
@@ -20,15 +21,6 @@ import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
 
 const r = t.room;
-
-function countryLabel(value: string) {
-  return t.create.country.options.find((o) => o.value === value)?.label ?? value;
-}
-
-function genresLabel(genres: string[]) {
-  if (genres.length === 0) return r.allGenres;
-  return genres.map((g) => t.create.genres.options.find((o) => o.value === g)?.label ?? g).join(", ");
-}
 
 export default function RoomPage() {
   const { code } = useParams<{ code: string }>();
@@ -91,17 +83,10 @@ export default function RoomPage() {
     setStarting(true);
     setStartError(null);
     try {
-      const exclude = await getUsedMovieIds(room.id);
-      const res = await fetch("/api/movies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ genres: room.genres, exclude }),
-      });
-      if (!res.ok) throw new Error("catálogo indisponível");
-      const { movieIds } = (await res.json()) as { movieIds: string[] };
-      await startRound(room.id, movieIds);
+      await startNextRound(room);
     } catch (e) {
-      setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
+      if (e instanceof DeckExhaustedError) setStartError(t.round.deckExhausted);
+      else setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
     } finally {
       setStarting(false);
     }

@@ -24,12 +24,13 @@ test("percorre as 5 telas em sequência", async ({ page }) => {
   // a demonstração fixa do M1.
   await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/, { timeout: 15_000 });
 
+  // M5: voto de verdade. Sozinho na sala, aprovar já é unanimidade.
   await page.getByRole("button", { name: /Quero assistir/ }).click();
-  await expect(page).toHaveURL(/\/match$/);
+  await expect(page).toHaveURL(/\/match\/MFX\d{3}\/\w+$/);
   await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible();
 
   await page.getByRole("link", { name: "Continuar escolhendo" }).click();
-  await expect(page).toHaveURL(/\/escolher$/);
+  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/);
 });
 
 test.describe("Criar sala", () => {
