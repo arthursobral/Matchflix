@@ -187,7 +187,7 @@ export function PickMovie({ movies: realMovies }: Props) {
               {p.more} ↗
             </Link>
           ) : (
-            <button type="button" className={`${styles.more} desktop-only`} aria-disabled="true" title={t.nav.soon}>
+            <button type="button" className={`${styles.more} ${styles.moreDisabled} desktop-only`} aria-disabled="true" title={t.nav.soon}>
               {p.more} ↗
             </button>
           )}

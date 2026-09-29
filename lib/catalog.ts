@@ -57,7 +57,11 @@ export async function discoverMovieIds(opts: { genres: string[]; exclude: string
       include_adult: "false",
       "vote_count.gte": "200",
       page: String(page),
-      ...(genreIds.length > 0 ? { with_genres: genreIds.join(",") } : {}),
+      // "|" = OU (qualquer um dos gêneros); "," faria o TMDB tratar como E (interseção),
+      // esgotando o catálogo rápido demais quando mais de um gênero está marcado.
+      // "|" = OU (qualquer um dos gêneros); "," faria o TMDB tratar como E (interseção),
+      // esgotando o catálogo rápido demais quando mais de um gênero está marcado.
+      ...(genreIds.length > 0 ? { with_genres: genreIds.join("|") } : {}),
     });
     const results = (data.results ?? []) as { id: number; poster_path: string | null }[];
     for (const m of results) {
