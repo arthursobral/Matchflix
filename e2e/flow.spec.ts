@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hasSupabase } from "../playwright.config";
+import { hasSupabase, hasTmdb } from "../playwright.config";
 import { createTestRoom, joinTestRoom } from "./helpers";
 
 test.use({ viewport: { width: 1440, height: 1000 }, permissions: ["clipboard-read", "clipboard-write"] });
@@ -132,6 +132,20 @@ test.describe("Início de rodada", () => {
     // Mesmo baralho, mesma ordem: o primeiro filme é o mesmo para os dois.
     const hostTitle = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 15_000 });
     await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!, { timeout: 15_000 });
+  });
+
+  test("'Mais sobre o filme' leva para a tela de detalhes do mesmo filme", async ({ page }) => {
+    test.skip(!hasSupabase || !hasTmdb, "precisa de Supabase e TMDB_API_KEY configurados (.env.local)");
+
+    await createTestRoom(page);
+    await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
+    await expect(page).toHaveURL(/\/escolher\//, { timeout: 15_000 });
+
+    const title = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 15_000 });
+    await page.getByRole("link", { name: /Mais sobre o filme/ }).click();
+
+    await expect(page).toHaveURL(/\/filme\/\d+$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(title!);
   });
 
   test("quem não é anfitrião não consegue iniciar a rodada", async ({ page, browser }) => {

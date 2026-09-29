@@ -108,15 +108,12 @@ export default function MovieDetailsPage() {
           )}
         </section>
 
-        {/* Link obrigatório pelos termos do TMDB (só existe quando `providers` vem preenchido —
-            ver observação no relatório sobre esse ponto do contrato). */}
-        {providers && (
-          <div className={styles.actions}>
-            <Button icon="link" variant="secondary" href={providers.tmdbUrl}>
-              {d.tmdbLink}
-            </Button>
-          </div>
-        )}
+        {/* Link obrigatório pelos termos do TMDB — sempre presente, com ou sem streaming. */}
+        <div className={styles.actions}>
+          <Button icon="link" variant="secondary" href={movie.tmdbUrl}>
+            {d.tmdbLink}
+          </Button>
+        </div>
       </div>
     </main>
   );
