@@ -141,4 +141,17 @@ export const ptBR = {
   footer: "Uma escolha em comum. Uma noite de cinema.",
   footerAttribution:
     "Dados de filmes: TMDB · Disponibilidade: JustWatch. Este produto usa a API do TMDB, mas não é endossado ou certificado por ela.",
+  movieDetails: {
+    eyebrow: "Detalhes do filme",
+    back: "← Voltar",
+    loading: "Carregando…",
+    notFound: "Filme não encontrado.",
+    noPoster: "Pôster indisponível.",
+    where: "Onde assistir",
+    flatrate: "Assinatura",
+    rent: "Aluguel",
+    buy: "Compra",
+    noAvailability: "Não há disponibilidade conhecida para esse filme nesse país.",
+    tmdbLink: "Ver página no TMDB",
+  },
 } as const;

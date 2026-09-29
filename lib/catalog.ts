@@ -82,7 +82,10 @@ export type MovieDetails = {
   runtimeMinutes: number;
   year: number;
   posterUrl: string | null;
-  providers: { flatrate: MovieProvider[]; rent: MovieProvider[]; buy: MovieProvider[]; tmdbUrl: string } | null;
+  // Link para a página do filme no TMDB — obrigatório pelos termos de uso independente de
+  // haver disponibilidade de streaming ou não, por isso fica fora de `providers`.
+  tmdbUrl: string;
+  providers: { flatrate: MovieProvider[]; rent: MovieProvider[]; buy: MovieProvider[] } | null;
 };
 
 /** Detalhes completos de um filme e onde assistir no país pedido; `null` se não existir. */
@@ -103,7 +106,7 @@ export async function getMovieDetails(tmdbId: string, opts: { lang: string; coun
   }
 
   type RawProviderList = { provider_name: string; logo_path: string }[];
-  type CountryProviders = { link: string; flatrate?: RawProviderList; rent?: RawProviderList; buy?: RawProviderList };
+  type CountryProviders = { flatrate?: RawProviderList; rent?: RawProviderList; buy?: RawProviderList };
 
   let providers: MovieDetails["providers"] = null;
   try {
@@ -115,7 +118,7 @@ export async function getMovieDetails(tmdbId: string, opts: { lang: string; coun
       const flatrate = mapProviders(forCountry.flatrate);
       const rent = mapProviders(forCountry.rent);
       const buy = mapProviders(forCountry.buy);
-      if (flatrate.length || rent.length || buy.length) providers = { flatrate, rent, buy, tmdbUrl: forCountry.link };
+      if (flatrate.length || rent.length || buy.length) providers = { flatrate, rent, buy };
     }
   } catch {
     // Sem disponibilidade não é um erro fatal para a tela — só fica sem providers.
@@ -129,6 +132,7 @@ export async function getMovieDetails(tmdbId: string, opts: { lang: string; coun
     runtimeMinutes: movie.runtime ?? 0,
     year: movie.release_date ? new Date(movie.release_date).getFullYear() : 0,
     posterUrl: movie.poster_path ? `${IMAGE_BASE}/w500${movie.poster_path}` : null,
+    tmdbUrl: `https://www.themoviedb.org/movie/${movie.id}`,
     providers,
   };
 }

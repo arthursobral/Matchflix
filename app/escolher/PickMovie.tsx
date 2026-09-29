@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/Avatar";
@@ -25,6 +26,8 @@ export type PickableMovie = {
   poster: PosterImage;
   halo: "red" | "amber" | "gray";
   providers: { flatrate: MovieProvider[]; rent: MovieProvider[]; buy: MovieProvider[] } | null;
+  /** Link para /filme/[tmdbId]; `null` para os filmes fictícios de demonstração. */
+  detailsHref: string | null;
 };
 
 type Props = {
@@ -33,7 +36,7 @@ type Props = {
 };
 
 function demoAsPickable(m: (typeof demoMovies)[number]): PickableMovie {
-  return { id: m.id, title: m.title, meta: m.meta, synopsis: m.synopsis, poster: m.poster, halo: m.halo, providers: null };
+  return { id: m.id, title: m.title, meta: m.meta, synopsis: m.synopsis, poster: m.poster, halo: m.halo, providers: null, detailsHref: null };
 }
 
 export function PickMovie({ movies: realMovies }: Props) {
@@ -179,9 +182,15 @@ export function PickMovie({ movies: realMovies }: Props) {
               )}
             </div>
           </div>
-          <button type="button" className={`${styles.more} desktop-only`} aria-disabled="true" title={t.nav.soon}>
-            {p.more} ↗
-          </button>
+          {movie.detailsHref ? (
+            <Link href={movie.detailsHref} className={`${styles.more} desktop-only`}>
+              {p.more} ↗
+            </Link>
+          ) : (
+            <button type="button" className={`${styles.more} desktop-only`} aria-disabled="true" title={t.nav.soon}>
+              {p.more} ↗
+            </button>
+          )}
         </section>
 
         <div className={styles.actions}>

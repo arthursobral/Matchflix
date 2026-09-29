@@ -17,6 +17,7 @@ type MovieDetailsResponse = {
   runtimeMinutes: number;
   year: number;
   posterUrl: string | null;
+  tmdbUrl: string;
   providers: PickableMovie["providers"];
 };
 
@@ -34,7 +35,17 @@ function formatMeta(m: MovieDetailsResponse): string {
  */
 async function resolveMovie(id: string, country: string): Promise<PickableMovie | null> {
   const demo = demoMovies.find((m) => m.id === id);
-  if (demo) return { id: demo.id, title: demo.title, meta: demo.meta, synopsis: demo.synopsis, poster: demo.poster, halo: demo.halo, providers: null };
+  if (demo)
+    return {
+      id: demo.id,
+      title: demo.title,
+      meta: demo.meta,
+      synopsis: demo.synopsis,
+      poster: demo.poster,
+      halo: demo.halo,
+      providers: null,
+      detailsHref: null,
+    };
 
   const res = await fetch(`/api/movies/${id}?country=${country}`);
   if (!res.ok) return null;
@@ -48,6 +59,7 @@ async function resolveMovie(id: string, country: string): Promise<PickableMovie 
     poster: details.posterUrl ? { src: details.posterUrl, title: details.title } : { src: "/demo/horizonte.svg", title: details.title },
     halo: "gray",
     providers: details.providers,
+    detailsHref: `/filme/${details.id}`,
   };
 }
 
