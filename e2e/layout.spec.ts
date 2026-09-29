@@ -135,7 +135,7 @@ for (const [device, viewport, screens] of [
           // (que dependem da altura da lista) baterem com o mockup.
           await joinTestRoom(await (await browser.newContext()).newPage(), code, "Lucas");
           await joinTestRoom(await (await browser.newContext()).newPage(), code, "Bruno");
-          await page.reload(); // sem realtime ainda (M3); o anfitrião só vê depois de recarregar
+          await expect(page.locator("li")).toHaveCount(3); // chega ao vivo, via Realtime (M3)
         } else {
           await page.goto(screen.path);
         }

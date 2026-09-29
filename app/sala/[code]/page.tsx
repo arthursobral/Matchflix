@@ -5,8 +5,17 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { CopyInviteButton } from "@/components/CopyInviteButton";
-import { getRoomByCode, formatRoomCode, initialsOf, type Participant, type Room } from "@/lib/rooms";
+import {
+  getRoomByCode,
+  initialsOf,
+  startRound,
+  subscribeToParticipants,
+  subscribeToRoom,
+  type Participant,
+  type Room,
+} from "@/lib/rooms";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
+import { demoMovies } from "@/lib/demo-movies";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
 
@@ -28,6 +37,8 @@ export default function RoomPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +60,48 @@ export default function RoomPage() {
     };
   }, [code]);
 
+  useEffect(() => {
+    if (!room) return;
+    return subscribeToParticipants(room.id, () => {
+      getRoomByCode(code).then((result) => result && setParticipants(result.participants));
+    });
+  }, [room, code]);
+
+  useEffect(() => {
+    if (!room) return;
+    // Ninguém avisa a hora certa em que a sala expira (não é uma mudança no banco) — um
+    // temporizador garante que quem já está dentro seja avisado mesmo sem nenhum outro
+    // evento em tempo real acontecer nesse meio-tempo.
+    const ms = new Date(room.expiresAt).getTime() - Date.now();
+    const id = setTimeout(() => setError(r.notFound), Math.max(ms, 0));
+    return () => clearTimeout(id);
+  }, [room]);
+
+  useEffect(() => {
+    if (!room) return;
+    return subscribeToRoom(room.id, () => {
+      getRoomByCode(code).then((result) => {
+        if (result?.room.status === "voting") router.push(`/escolher/${code}`);
+      });
+    });
+  }, [room, code, router]);
+
+  async function handleStart() {
+    if (!room || starting) return;
+    setStarting(true);
+    setStartError(null);
+    try {
+      await startRound(
+        room.id,
+        demoMovies.map((m) => m.id),
+      );
+    } catch (e) {
+      setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
+    } finally {
+      setStarting(false);
+    }
+  }
+
   // Estados de carregamento e erro ainda não têm design aprovado (M1); texto simples por ora.
   if (error) return <main className={styles.main}>{error}</main>;
   if (!room) return <main className={styles.main}>{r.loading}</main>;
@@ -66,7 +119,7 @@ export default function RoomPage() {
         <div className={styles.invite}>
           <p className="eyebrow desktop-only">{r.invite.eyebrow}</p>
           <p className="eyebrow mobile-only">{r.invite.eyebrowMobile}</p>
-          <p className={styles.code}>{formatRoomCode(room.code)}</p>
+          <p className={styles.code}>{room.code}</p>
           <p className={`${styles.private} desktop-only`}>{r.invite.private}</p>
           <div className={styles.copy}>
             <CopyInviteButton label={r.invite.copy} copiedLabel={r.invite.copied} code={room.code} />
@@ -105,12 +158,17 @@ export default function RoomPage() {
         </p>
 
         <div className={styles.start}>
-          {/* M2: início real da rodada (com permissão do anfitrião) é do M3; por ora navega para a demonstração. */}
-          <Button icon="arrow" onClick={() => router.push("/escolher")}>
+          <Button icon="arrow" onClick={handleStart}>
             {r.start}
           </Button>
-          <p className="desktop-only">{r.startNote}</p>
-          <p className="mobile-only">{r.startNoteMobile}</p>
+          {startError ? (
+            <p role="alert">{startError}</p>
+          ) : (
+            <>
+              <p className="desktop-only">{r.startNote}</p>
+              <p className="mobile-only">{r.startNoteMobile}</p>
+            </>
+          )}
         </div>
       </section>
     </main>

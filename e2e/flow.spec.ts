@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { hasSupabase } from "../playwright.config";
-import { createTestRoom } from "./helpers";
+import { createTestRoom, joinTestRoom } from "./helpers";
 
 test.use({ viewport: { width: 1440, height: 1000 }, permissions: ["clipboard-read", "clipboard-write"] });
 
@@ -20,7 +20,7 @@ test("percorre as 5 telas em sequência", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Cinema de sexta");
 
   await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
-  await expect(page).toHaveURL(/\/escolher$/);
+  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/);
 
   await page.getByRole("button", { name: /Quero assistir/ }).click();
   await expect(page).toHaveURL(/\/match$/);
@@ -99,8 +99,7 @@ test.describe("Entrar por código", () => {
     await expect(guestPage).toHaveURL(new RegExp(`/sala/${code}$`));
     await expect(guestPage.locator("li strong")).toHaveText([/Teste/, /Convidado · Você/]);
 
-    // Sem realtime ainda (isso é do M3): o anfitrião só vê o convidado depois de recarregar.
-    await page.reload();
+    // M3: o anfitrião vê o convidado ao vivo, via Realtime, sem recarregar.
     await expect(page.locator("li strong")).toHaveText([/Teste · Você/, /Convidado/]);
   });
 
@@ -110,6 +109,52 @@ test.describe("Entrar por código", () => {
     await page.getByLabel("Seu apelido", { exact: true }).fill("Alguém");
     await page.getByRole("button", { name: "Juntar-se" }).click();
     await expect(page.locator('p[role="alert"]')).toHaveText("Não achamos essa sala. Confira o código.");
+  });
+});
+
+test.describe("Início de rodada", () => {
+  test("o anfitrião inicia e todos na sala vão para a escolha ao mesmo tempo", async ({ page, browser }) => {
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+
+    const code = await createTestRoom(page);
+    const guestPage = await (await browser.newContext()).newPage();
+    await joinTestRoom(guestPage, code, "Convidado");
+
+    await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`));
+    await expect(guestPage).toHaveURL(new RegExp(`/escolher/${code}$`));
+
+    // Mesmo baralho, mesma ordem: o primeiro filme é o mesmo para os dois.
+    const hostTitle = await page.getByRole("heading", { level: 1 }).textContent();
+    await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!);
+  });
+
+  test("quem não é anfitrião não consegue iniciar a rodada", async ({ page, browser }) => {
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+
+    const code = await createTestRoom(page);
+    const guestPage = await (await browser.newContext()).newPage();
+    await joinTestRoom(guestPage, code, "Convidado");
+
+    await guestPage.getByRole("button", { name: "Todos aqui? Começar" }).click();
+
+    await expect(guestPage.locator('p[role="alert"]')).toHaveText("Só o anfitrião pode começar a rodada.");
+    await expect(guestPage).toHaveURL(new RegExp(`/sala/${code}$`));
+  });
+});
+
+test.describe("Reconexão", () => {
+  test("entrar de novo com a mesma sessão não duplica o participante", async ({ page, browser }) => {
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+
+    const code = await createTestRoom(page);
+    const guestPage = await (await browser.newContext()).newPage();
+    await joinTestRoom(guestPage, code, "Convidado");
+    await joinTestRoom(guestPage, code, "Convidado"); // mesma sessão (mesmo contexto), entra de novo
+
+    await page.reload();
+    await expect(page.locator("li")).toHaveCount(2);
   });
 });
 

@@ -23,11 +23,6 @@ export class RoomExpiredError extends Error {}
  */
 type RoomRefRow = { out_room_id: string; out_code: string; out_participant_id: string };
 
-/** "MFX824" → "MFX 824", como no design. */
-export function formatRoomCode(code: string) {
-  return `${code.slice(0, 3)} ${code.slice(3)}`;
-}
-
 /** Duas iniciais para o avatar a partir do apelido ("Arthur Sobral" → "AS", "Lucas" → "LU"). */
 export function initialsOf(nickname: string): string {
   const parts = nickname.trim().split(/\s+/).filter(Boolean);
@@ -76,6 +71,7 @@ export type Room = {
   genres: string[];
   hostUserId: string;
   status: "lobby" | "voting" | "ended";
+  expiresAt: string;
 };
 
 export type Participant = {
@@ -85,12 +81,14 @@ export type Participant = {
   isHost: boolean;
 };
 
-/** Busca a sala pelo código. A lista de participantes ainda não é ao vivo — isso é do M3. */
+/** Busca a sala e a lista de participantes pelo código. */
 export async function getRoomByCode(code: string): Promise<{ room: Room; participants: Participant[] } | null> {
   const supabase = getSupabase();
   const { data: room, error } = await supabase.from("rooms").select("*").eq("code", code.toUpperCase()).maybeSingle();
   if (error) throw new Error(error.message);
-  if (!room) return null;
+  // Sala encerrada ou expirada: tratada como inexistente (mesma mensagem já usada para
+  // código inválido — quem já estava dentro é avisado assim que a tela buscar de novo).
+  if (!room || room.status === "ended" || new Date(room.expires_at) < new Date()) return null;
 
   const { data: participants, error: pError } = await supabase
     .from("participants")
@@ -110,6 +108,7 @@ export async function getRoomByCode(code: string): Promise<{ room: Room; partici
       genres: room.genres,
       hostUserId: room.host_user_id,
       status: room.status,
+      expiresAt: room.expires_at,
     },
     participants: (participants ?? []).map((p) => ({
       id: p.id,
@@ -118,4 +117,67 @@ export async function getRoomByCode(code: string): Promise<{ room: Room; partici
       isHost: p.is_host,
     })),
   };
+}
+
+/**
+ * Assina mudanças na lista de participantes de uma sala (entrada, saída, apelido).
+ * Chama `onChange` a cada evento; quem chama decide o que refazer (aqui, buscar a
+ * sala de novo — a lista é pequena, não vale a pena remontar o estado a partir do payload).
+ * Também chama `onChange` assim que a conexão é confirmada (`SUBSCRIBED`), para pegar
+ * qualquer mudança que tenha acontecido nesse meio-tempo entre a busca inicial e a
+ * inscrição ficar de fato ativa — sem isso, uma mudança nessa janela nunca chega.
+ */
+export function subscribeToParticipants(roomId: string, onChange: () => void): () => void {
+  const channel = getSupabase()
+    .channel(`room:${roomId}:participants`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "participants", filter: `room_id=eq.${roomId}` }, onChange)
+    .subscribe((status) => status === "SUBSCRIBED" && onChange());
+  return () => {
+    getSupabase().removeChannel(channel);
+  };
+}
+
+/** Assina mudanças na própria sala (hoje, só o início de rodada muda `status`); mesma reconciliação ao conectar (ver `subscribeToParticipants`). */
+export function subscribeToRoom(roomId: string, onChange: () => void): () => void {
+  const channel = getSupabase()
+    .channel(`room:${roomId}:status`)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` }, onChange)
+    .subscribe((status) => status === "SUBSCRIBED" && onChange());
+  return () => {
+    getSupabase().removeChannel(channel);
+  };
+}
+
+/**
+ * Só o anfitrião consegue iniciar a rodada — verificado no servidor (função `security
+ * definer`). `movieIds` é o baralho candidato (hoje, os filmes fictícios do M1); o
+ * servidor embaralha e grava a ordem, a mesma para todos os participantes.
+ */
+export async function startRound(roomId: string, movieIds: string[]): Promise<void> {
+  const { error } = await getSupabase().rpc("start_round", { p_room_id: roomId, p_movie_ids: movieIds });
+  if (error) throw new Error(error.message);
+}
+
+/** Baralho da rodada aberta da sala (mesma ordem para todos). `null` se ainda não houver rodada. */
+export async function getActiveRound(roomId: string): Promise<{ id: string; movieIds: string[] } | null> {
+  const supabase = getSupabase();
+  const { data: round, error } = await supabase
+    .from("rounds")
+    .select("id")
+    .eq("room_id", roomId)
+    .eq("status", "open")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!round) return null;
+
+  const { data: movies, error: mError } = await supabase
+    .from("round_movies")
+    .select("movie_id")
+    .eq("round_id", round.id)
+    .order("position", { ascending: true });
+  if (mError) throw new Error(mError.message);
+
+  return { id: round.id, movieIds: (movies ?? []).map((m) => m.movie_id as string) };
 }

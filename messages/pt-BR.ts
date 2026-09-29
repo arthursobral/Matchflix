@@ -95,6 +95,8 @@ export const ptBR = {
     start: "Todos aqui? Começar",
     startNote: "Novos convidados aguardam a próxima rodada.",
     startNoteMobile: "O anfitrião inicia a rodada.",
+    startDenied: "Só o anfitrião pode começar a rodada.",
+    startFailed: "Não foi possível iniciar a rodada. Tente de novo.",
   },
   pick: {
     round: (n: number) => `Rodada ${String(n).padStart(2, "0")}`,
