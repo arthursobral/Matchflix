@@ -20,7 +20,14 @@ export function Shell({ children }: { children: ReactNode }) {
         </button>
       </header>
       {children}
-      <footer className={styles.footer}>{t.footer}</footer>
+      <footer className={styles.footer}>
+        <p>{t.footer}</p>
+        <p className={styles.attribution}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- SVG de marca, não uma foto a otimizar */}
+          <img src="/tmdb-logo.svg" alt="TMDB" className={styles.tmdbLogo} />
+          {t.footerAttribution}
+        </p>
+      </footer>
     </div>
   );
 }

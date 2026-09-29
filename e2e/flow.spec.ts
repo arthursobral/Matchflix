@@ -20,7 +20,9 @@ test("percorre as 5 telas em sequência", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Cinema de sexta");
 
   await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
-  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/);
+  // Timeout maior: montar o baralho agora chama o TMDB de verdade (M4), mais lento que
+  // a demonstração fixa do M1.
+  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/, { timeout: 15_000 });
 
   await page.getByRole("button", { name: /Quero assistir/ }).click();
   await expect(page).toHaveURL(/\/match$/);
@@ -122,12 +124,14 @@ test.describe("Início de rodada", () => {
 
     await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
 
-    await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`));
-    await expect(guestPage).toHaveURL(new RegExp(`/escolher/${code}$`));
+    // Timeout maior: montar o baralho e buscar os detalhes de cada filme agora chama o
+    // TMDB de verdade (M4), mais lento que a demonstração fixa do M1.
+    await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 15_000 });
+    await expect(guestPage).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 15_000 });
 
     // Mesmo baralho, mesma ordem: o primeiro filme é o mesmo para os dois.
-    const hostTitle = await page.getByRole("heading", { level: 1 }).textContent();
-    await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!);
+    const hostTitle = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 15_000 });
+    await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!, { timeout: 15_000 });
   });
 
   test("quem não é anfitrião não consegue iniciar a rodada", async ({ page, browser }) => {

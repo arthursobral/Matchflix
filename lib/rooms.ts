@@ -181,3 +181,10 @@ export async function getActiveRound(roomId: string): Promise<{ id: string; movi
 
   return { id: round.id, movieIds: (movies ?? []).map((m) => m.movie_id as string) };
 }
+
+/** Ids de filmes já usados em qualquer rodada da sala (não repetir no próximo baralho). */
+export async function getUsedMovieIds(roomId: string): Promise<string[]> {
+  const { data, error } = await getSupabase().from("round_movies").select("movie_id").eq("room_id", roomId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => r.movie_id as string);
+}

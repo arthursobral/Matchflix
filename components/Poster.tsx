@@ -7,8 +7,10 @@ export const demoPosters = {
   ultimaSessao: { src: "/demo/ultima-sessao.svg", title: "A última sessão" },
 } as const;
 
+export type PosterImage = { src: string; title: string };
+
 type Props = {
-  poster: (typeof demoPosters)[keyof typeof demoPosters];
+  poster: PosterImage;
   className?: string;
   priority?: boolean;
 };
@@ -17,7 +19,7 @@ export function Poster({ poster, className, priority }: Props) {
   return (
     <Image
       src={poster.src}
-      alt={`Pôster de demonstração: ${poster.title}`}
+      alt={`Pôster: ${poster.title}`}
       width={360}
       height={520}
       className={className}

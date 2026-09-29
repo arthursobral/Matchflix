@@ -108,6 +108,7 @@ export const ptBR = {
     panelNote: "O match aparece quando todos aprovam o mesmo filme.",
     eyebrow: "A escolha pode estar aqui",
     where: "Onde assistir",
+    noAvailability: "Sem opção de streaming conhecida neste país.",
     more: "Mais sobre o filme",
     pass: "Passar",
     like: "Quero assistir",
@@ -138,4 +139,6 @@ export const ptBR = {
     expired: "Essa sala expirou.",
   },
   footer: "Uma escolha em comum. Uma noite de cinema.",
+  footerAttribution:
+    "Dados de filmes: TMDB · Disponibilidade: JustWatch. Este produto usa a API do TMDB, mas não é endossado ou certificado por ela.",
 } as const;
