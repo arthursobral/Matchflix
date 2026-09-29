@@ -1,0 +1,162 @@
+/* Base = mobile (referência 390 × 920). Desktop (referência 1440 × 1000) a partir de 1200px.
+   Estrutura calcada em app/match/match.module.css (pôster + coluna de informações), a tela
+   mais próxima já aprovada — sem os efeitos de entrada/halo, que são específicos do reveal
+   de match e não fazem sentido numa tela de consulta. */
+.main {
+  padding-top: 24px;
+}
+
+.back {
+  display: inline-block;
+}
+
+.visual {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.poster {
+  display: block;
+  width: 204px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 4px;
+}
+
+.posterFallback {
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.head {
+  margin-top: 24px;
+}
+
+.head h1 {
+  font: 400 32px/38px var(--font-serif);
+}
+
+.meta {
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.synopsis {
+  margin-top: 18px;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.where {
+  margin-top: 30px;
+  padding: 17px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.group {
+  margin-top: 13px;
+}
+
+.group:first-of-type {
+  margin-top: 12px;
+}
+
+.groupLabel {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--bg);
+  font-size: 12px;
+}
+
+.chip img {
+  border-radius: 4px;
+}
+
+.actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 27px;
+}
+
+@media (min-width: 1200px) {
+  .main {
+    display: grid;
+    grid-template-columns: 334px minmax(0, 593px);
+    grid-template-rows: auto 1fr;
+    column-gap: 123px;
+    margin-left: min(214px, max(0px, calc(100% - 1098px)));
+    padding-top: 48px;
+  }
+
+  .back {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+  }
+
+  .visual {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 24px;
+  }
+
+  .poster {
+    width: 312px;
+  }
+
+  .head {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 24px;
+  }
+
+  .head h1 {
+    font-size: 49px;
+    line-height: 58px;
+  }
+
+  .meta {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .synopsis {
+    margin-top: 22px;
+    max-width: 520px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 16px;
+    line-height: 26px;
+  }
+
+  .where {
+    max-width: 520px;
+    padding: 20px 24px;
+  }
+
+  .actions {
+    grid-template-columns: auto;
+    max-width: 320px;
+  }
+}

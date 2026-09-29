@@ -138,4 +138,16 @@ export const ptBR = {
     expired: "Essa sala expirou.",
   },
   footer: "Uma escolha em comum. Uma noite de cinema.",
+  movieDetails: {
+    back: "← Voltar",
+    loading: "Carregando…",
+    notFound: "Filme não encontrado.",
+    noPoster: "Pôster indisponível.",
+    where: "Onde assistir",
+    flatrate: "Assinatura",
+    rent: "Aluguel",
+    buy: "Compra",
+    noAvailability: "Não há disponibilidade conhecida para esse filme nesse país.",
+    tmdbLink: "Ver página no TMDB",
+  },
 } as const;
