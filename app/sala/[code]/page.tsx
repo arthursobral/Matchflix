@@ -7,7 +7,6 @@ import { Button } from "@/components/Button";
 import { CopyInviteButton } from "@/components/CopyInviteButton";
 import {
   getRoomByCode,
-  formatRoomCode,
   initialsOf,
   startRound,
   subscribeToParticipants,
@@ -120,7 +119,7 @@ export default function RoomPage() {
         <div className={styles.invite}>
           <p className="eyebrow desktop-only">{r.invite.eyebrow}</p>
           <p className="eyebrow mobile-only">{r.invite.eyebrowMobile}</p>
-          <p className={styles.code}>{formatRoomCode(room.code)}</p>
+          <p className={styles.code}>{room.code}</p>
           <p className={`${styles.private} desktop-only`}>{r.invite.private}</p>
           <div className={styles.copy}>
             <CopyInviteButton label={r.invite.copy} copiedLabel={r.invite.copied} code={room.code} />

@@ -23,11 +23,6 @@ export class RoomExpiredError extends Error {}
  */
 type RoomRefRow = { out_room_id: string; out_code: string; out_participant_id: string };
 
-/** "MFX824" → "MFX 824", como no design. */
-export function formatRoomCode(code: string) {
-  return `${code.slice(0, 3)} ${code.slice(3)}`;
-}
-
 /** Duas iniciais para o avatar a partir do apelido ("Arthur Sobral" → "AS", "Lucas" → "LU"). */
 export function initialsOf(nickname: string): string {
   const parts = nickname.trim().split(/\s+/).filter(Boolean);
