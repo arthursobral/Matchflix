@@ -139,6 +139,7 @@ export const ptBR = {
   },
   footer: "Uma escolha em comum. Uma noite de cinema.",
   movieDetails: {
+    eyebrow: "Detalhes do filme",
     back: "← Voltar",
     loading: "Carregando…",
     notFound: "Filme não encontrado.",

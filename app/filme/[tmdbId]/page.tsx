@@ -88,6 +88,7 @@ export default function MovieDetailsPage() {
       </figure>
 
       <div className={styles.head}>
+        <p className="eyebrow">{d.eyebrow}</p>
         <h1>{movie.title}</h1>
         <p className={styles.meta}>
           {movie.genres.join(", ")} · {formatRuntime(movie.runtimeMinutes)} · {movie.year}
