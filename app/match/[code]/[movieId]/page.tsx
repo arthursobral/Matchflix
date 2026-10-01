@@ -72,6 +72,7 @@ export default function RoomMatchPage() {
       provider={providerLine(data.movie.providers)}
       keepGoingHref={`/escolher/${code}`}
       haloBackground={data.halo}
+      watchHref={data.movie.tmdbUrl}
     />
   );
 }

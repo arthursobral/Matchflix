@@ -30,6 +30,8 @@ export type PickableMovie = {
   providers: { flatrate: MovieProvider[]; rent: MovieProvider[]; buy: MovieProvider[] } | null;
   /** Link para /filme/[tmdbId]; `null` para os filmes fictícios de demonstração. */
   detailsHref: string | null;
+  /** Página do filme no TMDB (link obrigatório, sem ir direto pro serviço); `null` na demonstração. */
+  tmdbUrl: string | null;
 };
 
 export type CrewMember = { name: string; initials: string; host: boolean; you: boolean };
@@ -57,7 +59,7 @@ type Props = {
 };
 
 function demoAsPickable(m: (typeof demoMovies)[number]): PickableMovie {
-  return { id: m.id, title: m.title, meta: m.meta, synopsis: m.synopsis, poster: m.poster, halo: m.halo, providers: null, detailsHref: null };
+  return { id: m.id, title: m.title, meta: m.meta, synopsis: m.synopsis, poster: m.poster, halo: m.halo, providers: null, detailsHref: null, tmdbUrl: null };
 }
 
 const isTmdbPoster = (src: string) => src.startsWith("https://image.tmdb.org/");

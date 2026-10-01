@@ -18,6 +18,7 @@ export default function MatchPage() {
       provider={{ name: demoAvailability.provider, note: demoAvailability.note }}
       keepGoingHref="/escolher"
       haloBackground={`var(--halo-${movie.halo})`}
+      watchHref={null}
     />
   );
 }

@@ -46,6 +46,12 @@
   border-radius: 4px;
 }
 
+.disclaimer {
+  margin-top: 13px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
 @media (min-width: 1200px) {
   .where {
     padding: 20px 24px;

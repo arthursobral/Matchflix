@@ -44,6 +44,7 @@ export function WhereToWatch({ providers, label, className }: Props) {
           <Group label={d.flatrate} providers={providers.flatrate} />
           <Group label={d.rent} providers={providers.rent} />
           <Group label={d.buy} providers={providers.buy} />
+          <p className={styles.disclaimer}>{t.availabilityDisclaimer}</p>
         </>
       )}
     </section>

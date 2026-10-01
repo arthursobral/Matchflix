@@ -35,6 +35,7 @@ export async function resolveMovie(id: string, country: string): Promise<Pickabl
       halo: demo.halo,
       providers: null,
       detailsHref: null,
+      tmdbUrl: null,
     };
 
   const res = await fetch(`/api/movies/${id}?country=${country}`);
@@ -50,5 +51,6 @@ export async function resolveMovie(id: string, country: string): Promise<Pickabl
     halo: "gray",
     providers: details.providers,
     detailsHref: `/filme/${details.id}`,
+    tmdbUrl: details.tmdbUrl,
   };
 }
