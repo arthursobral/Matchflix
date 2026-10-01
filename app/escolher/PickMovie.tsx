@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
-import { Poster } from "@/components/Poster";
+import { Poster, type PosterImage } from "@/components/Poster";
 import { demoAvailability, demoMovies } from "@/lib/demo-movies";
 import { demoRoom as room } from "@/lib/demo-room";
 import { ptBR as t } from "@/messages/pt-BR";
@@ -15,16 +16,34 @@ const TOTAL = 20;
 const FIRST = 4;
 const SWIPE_DISTANCE = 90;
 
-type Props = {
-  /** Ids de `demoMovies`, na ordem da rodada. Sem isso, usa a ordem fixa de demonstração. */
-  movieIds?: string[];
+export type MovieProvider = { name: string; logoUrl: string };
+
+export type PickableMovie = {
+  id: string;
+  title: string;
+  meta: string;
+  synopsis: string;
+  poster: PosterImage;
+  halo: "red" | "amber" | "gray";
+  providers: { flatrate: MovieProvider[]; rent: MovieProvider[]; buy: MovieProvider[] } | null;
+  /** Link para /filme/[tmdbId]; `null` para os filmes fictícios de demonstração. */
+  detailsHref: string | null;
 };
 
-export function PickMovie({ movieIds }: Props) {
+type Props = {
+  /** Filmes reais da rodada, na ordem sorteada pelo servidor. Sem isso, usa a demonstração fixa. */
+  movies?: PickableMovie[];
+};
+
+function demoAsPickable(m: (typeof demoMovies)[number]): PickableMovie {
+  return { id: m.id, title: m.title, meta: m.meta, synopsis: m.synopsis, poster: m.poster, halo: m.halo, providers: null, detailsHref: null };
+}
+
+export function PickMovie({ movies: realMovies }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const filtered = movieIds?.map((id) => demoMovies.find((m) => m.id === id)).filter((m): m is (typeof demoMovies)[number] => m !== undefined);
-  const movies = filtered && filtered.length > 0 ? filtered : demoMovies;
+  const isReal = !!realMovies && realMovies.length > 0;
+  const movies = isReal ? realMovies! : demoMovies.map(demoAsPickable);
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
@@ -37,7 +56,7 @@ export function PickMovie({ movieIds }: Props) {
   // Filme que está saindo de cena (animação de "Passar"), com a mesma lógica de ref:
   // pass() é chamada por vários eventos (botão, teclado, arraste) e precisa do filme
   // atual, não de um capturado por um useCallback com deps vazias.
-  const [exit, setExit] = useState<{ key: number; poster: (typeof demoMovies)[number]["poster"]; fromDx: number } | null>(null);
+  const [exit, setExit] = useState<{ key: number; poster: PosterImage; fromDx: number } | null>(null);
 
   const movie = movies[step % movies.length];
   const movieRef = useRef(movie);
@@ -143,13 +162,35 @@ export function PickMovie({ movieIds }: Props) {
               {p.where} · {room.country}
             </p>
             <div className={styles.provider}>
-              <span className={styles.chip}>{demoAvailability.provider}</span>
-              <span>{demoAvailability.note}</span>
+              {isReal ? (
+                movie.providers ? (
+                  [...movie.providers.flatrate, ...movie.providers.rent, ...movie.providers.buy]
+                    .slice(0, 3)
+                    .map((prov) => (
+                      <span key={prov.name} className={styles.chip}>
+                        {prov.name}
+                      </span>
+                    ))
+                ) : (
+                  <span>{p.noAvailability}</span>
+                )
+              ) : (
+                <>
+                  <span className={styles.chip}>{demoAvailability.provider}</span>
+                  <span>{demoAvailability.note}</span>
+                </>
+              )}
             </div>
           </div>
-          <button type="button" className={`${styles.more} desktop-only`} aria-disabled="true" title={t.nav.soon}>
-            {p.more} ↗
-          </button>
+          {movie.detailsHref ? (
+            <Link href={movie.detailsHref} className={`${styles.more} desktop-only`}>
+              {p.more} ↗
+            </Link>
+          ) : (
+            <button type="button" className={`${styles.more} ${styles.moreDisabled} desktop-only`} aria-disabled="true" title={t.nav.soon}>
+              {p.more} ↗
+            </button>
+          )}
         </section>
 
         <div className={styles.actions}>
@@ -186,7 +227,7 @@ function ExitingCard({
   fromDx,
   onDone,
 }: {
-  poster: (typeof demoMovies)[number]["poster"];
+  poster: PosterImage;
   fromDx: number;
   onDone: () => void;
 }) {

@@ -42,6 +42,19 @@
   text-align: center;
 }
 
+.attribution {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tmdbLogo {
+  height: 10px;
+  width: auto;
+}
+
 @media (min-width: 1200px) {
   .page {
     width: min(1312px, 100% - 64px);

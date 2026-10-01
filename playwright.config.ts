@@ -19,6 +19,9 @@ if (fs.existsSync(envLocal)) {
 /** Só true quando há um projeto Supabase configurado (ex.: localmente, com .env.local). */
 export const hasSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
+/** Só true quando há uma chave do TMDB configurada (ex.: localmente, com .env.local). */
+export const hasTmdb = !!process.env.TMDB_API_KEY;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,

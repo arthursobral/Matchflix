@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { CopyInviteButton } from "@/components/CopyInviteButton";
 import {
   getRoomByCode,
+  getUsedMovieIds,
   initialsOf,
   startRound,
   subscribeToParticipants,
@@ -15,7 +16,6 @@ import {
   type Room,
 } from "@/lib/rooms";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
-import { demoMovies } from "@/lib/demo-movies";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
 
@@ -91,10 +91,15 @@ export default function RoomPage() {
     setStarting(true);
     setStartError(null);
     try {
-      await startRound(
-        room.id,
-        demoMovies.map((m) => m.id),
-      );
+      const exclude = await getUsedMovieIds(room.id);
+      const res = await fetch("/api/movies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ genres: room.genres, exclude }),
+      });
+      if (!res.ok) throw new Error("catálogo indisponível");
+      const { movieIds } = (await res.json()) as { movieIds: string[] };
+      await startRound(room.id, movieIds);
     } catch (e) {
       setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
     } finally {
