@@ -52,6 +52,24 @@ export type RoundInfo = {
   onDone: () => void;
 };
 
+export type CrewMember = { name: string; initials: string; host: boolean; you: boolean };
+
+/** Rodada de verdade (M5). Sem isso, a tela roda a demonstração fixa do M1. */
+export type RoundInfo = {
+  roomName: string;
+  roundNumber: number;
+  country: string;
+  genres: string;
+  participants: CrewMember[];
+  /** Tamanho do baralho da rodada. */
+  total: number;
+  /** Quantos filmes a pessoa já tinha votado ao abrir a tela (retomada). */
+  votedBefore: number;
+  onVote: (movieId: string, approve: boolean) => void;
+  /** Votou no último filme que faltava. */
+  onDone: () => void;
+};
+
 type Props = {
   /** Filmes da rodada que a pessoa ainda não votou, na ordem sorteada pelo servidor. */
   movies?: PickableMovie[];
