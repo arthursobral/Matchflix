@@ -42,7 +42,7 @@ test.describe("Consenso (M5)", () => {
     await vote(guest, true);
     for (const p of [page, guest]) {
       await expect(p).toHaveURL(new RegExp(`/match/${code}/\\w+$`));
-      await expect(p.getByRole("heading", { name: "Deu match." })).toBeVisible();
+      await expect(p.getByRole("heading", { name: "Deu match." })).toBeVisible({ timeout: 25_000 });
       await expect(p.getByRole("heading", { level: 2 })).toHaveText(first!);
       await expect(p.getByText("2 de 2 querem assistir.")).toBeVisible();
     }

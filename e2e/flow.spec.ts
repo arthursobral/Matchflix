@@ -27,7 +27,9 @@ test("percorre as 5 telas em sequência", async ({ page }) => {
   // M5: voto de verdade. Sozinho na sala, aprovar já é unanimidade.
   await page.getByRole("button", { name: /Quero assistir/ }).click();
   await expect(page).toHaveURL(/\/match\/MFX\d{3}\/\w+$/);
-  await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible();
+  // Timeout maior: a tela de match real busca a sala, a rodada e o filme (TMDB) antes de
+  // renderizar — mais lento que o reveal fixo da demonstração.
+  await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible({ timeout: 25_000 });
 
   await page.getByRole("link", { name: "Continuar escolhendo" }).click();
   await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/);

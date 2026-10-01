@@ -6,6 +6,7 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { Poster, type PosterImage } from "@/components/Poster";
+import { WhereToWatch } from "@/components/WhereToWatch";
 import { demoAvailability, demoMovies } from "@/lib/demo-movies";
 import { demoRoom } from "@/lib/demo-room";
 import { haloGradient, posterColor, type Rgb } from "@/lib/poster-color";
@@ -219,33 +220,19 @@ export function PickMovie({ movies: realMovies, round }: Props) {
           <h1>{movie.title}</h1>
           <p className={styles.meta}>{movie.meta}</p>
           <p className={styles.synopsis}>{movie.synopsis}</p>
-          <div className={styles.where}>
-            <p className="eyebrow">
-              {p.where} · {room.country}
-            </p>
-            <div className={styles.provider}>
-              {isReal ? (
-                movie.providers ? (
-                  // O mesmo provedor costuma aparecer em mais de uma categoria (ex.: "Amazon
-                  // Video" em aluguel e compra) — sem isso, a chave duplicada quebra o React.
-                  [...new Map([...movie.providers.flatrate, ...movie.providers.rent, ...movie.providers.buy].map((prov) => [prov.name, prov])).values()]
-                    .slice(0, 3)
-                    .map((prov) => (
-                      <span key={prov.name} className={styles.chip}>
-                        {prov.name}
-                      </span>
-                    ))
-                ) : (
-                  <span>{p.noAvailability}</span>
-                )
-              ) : (
-                <>
-                  <span className={styles.chip}>{demoAvailability.provider}</span>
-                  <span>{demoAvailability.note}</span>
-                </>
-              )}
+          {isReal ? (
+            <WhereToWatch providers={movie.providers} label={`${p.where} · ${room.country}`} className={styles.where} />
+          ) : (
+            <div className={styles.where}>
+              <p className="eyebrow">
+                {p.where} · {room.country}
+              </p>
+              <div className={styles.provider}>
+                <span className={styles.chip}>{demoAvailability.provider}</span>
+                <span>{demoAvailability.note}</span>
+              </div>
             </div>
-          </div>
+          )}
           {movie.detailsHref ? (
             <Link href={movie.detailsHref} className={`${styles.more} desktop-only`}>
               {p.more} ↗

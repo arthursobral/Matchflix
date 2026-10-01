@@ -49,50 +49,10 @@
   line-height: 22px;
 }
 
+/* O visual do cartão (borda, fundo, grupos, chips com logo) vem de components/WhereToWatch —
+   aqui só a posição dele dentro do layout desta tela. */
 .where {
   margin-top: 30px;
-  padding: 17px 20px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.group {
-  margin-top: 13px;
-}
-
-.group:first-of-type {
-  margin-top: 12px;
-}
-
-.groupLabel {
-  color: var(--text-2);
-  font-size: 11px;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--border);
-  border-radius: 17px;
-  background: var(--bg);
-  font-size: 12px;
-}
-
-.chip img {
-  border-radius: 4px;
 }
 
 .actions {
@@ -154,7 +114,6 @@
 
   .where {
     max-width: 520px;
-    padding: 20px 24px;
   }
 
   .actions {

@@ -4,8 +4,9 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
+import { WhereToWatch } from "@/components/WhereToWatch";
 import { ptBR as t } from "@/messages/pt-BR";
-import { getMovieDetails, type MovieDetails, type Provider } from "./data";
+import { getMovieDetails, type MovieDetails } from "./data";
 import styles from "./filme.module.css";
 
 const d = t.movieDetails;
@@ -14,24 +15,6 @@ function formatRuntime(minutes: number) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${String(m).padStart(2, "0")}min`;
-}
-
-function ProviderGroup({ label, providers }: { label: string; providers: Provider[] }) {
-  if (providers.length === 0) return null;
-  return (
-    <div className={styles.group}>
-      <p className={styles.groupLabel}>{label}</p>
-      <ul className={styles.chips}>
-        {providers.map((provider) => (
-          <li key={provider.name} className={styles.chip}>
-            {/* Logo decorativo: o nome do provedor já vai como texto ao lado. */}
-            <img src={provider.logoUrl} alt="" width={20} height={20} />
-            <span>{provider.name}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 }
 
 export default function MovieDetailsPage() {
@@ -72,9 +55,6 @@ export default function MovieDetailsPage() {
       </main>
     );
 
-  const providers = movie.providers;
-  const noAvailability = !providers || (providers.flatrate.length === 0 && providers.rent.length === 0 && providers.buy.length === 0);
-
   return (
     <main className={styles.main}>
       <div className={styles.back}>{back}</div>
@@ -95,18 +75,7 @@ export default function MovieDetailsPage() {
         </p>
         <p className={styles.synopsis}>{movie.synopsis}</p>
 
-        <section className={styles.where} aria-label={d.where}>
-          <p className="eyebrow">{d.where}</p>
-          {noAvailability ? (
-            <p className={styles.group}>{d.noAvailability}</p>
-          ) : (
-            <>
-              <ProviderGroup label={d.flatrate} providers={providers!.flatrate} />
-              <ProviderGroup label={d.rent} providers={providers!.rent} />
-              <ProviderGroup label={d.buy} providers={providers!.buy} />
-            </>
-          )}
-        </section>
+        <WhereToWatch providers={movie.providers} label={d.where} className={styles.where} />
 
         {/* Link obrigatório pelos termos do TMDB — sempre presente, com ou sem streaming. */}
         <div className={styles.actions}>
