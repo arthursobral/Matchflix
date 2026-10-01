@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="43%" r="60%">
+      <stop offset="0" stop-color="#B73548" stop-opacity=".28"></stop>
+      <stop offset="1" stop-color="#161618" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="ticket" x1="17" y1="17" x2="48" y2="47" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B73548"></stop>
+      <stop offset="1" stop-color="#7E1F30"></stop>
+    </linearGradient>
+    <linearGradient id="gold" x1="20" y1="23" x2="44" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3DEAE"></stop>
+      <stop offset=".5" stop-color="#D0AD73"></stop>
+      <stop offset="1" stop-color="#B99A63"></stop>
+    </linearGradient>
+    <filter id="gold-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+    </filter>
+    <filter id="white-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation=".8"></feGaussianBlur>
+    </filter>
+  </defs>
+
+  <rect width="64" height="64" rx="15" fill="#161618"></rect>
+  <circle cx="32" cy="29" r="30" fill="url(#glow)"></circle>
+
+  <rect x="15" y="16" width="34" height="32" rx="6" fill="url(#ticket)" stroke="#D0AD73" stroke-width="2"></rect>
+
+  <path d="M21 18v28M43 18v28" stroke="#D0AD73" stroke-width="1.5" stroke-dasharray="3 3" opacity=".85"></path>
+
+  <text x="32" y="39" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, 'Times New Roman', serif" font-size="25" font-weight="500" fill="#D0AD73" opacity=".65" filter="url(#gold-glow)">M</text>
+
+  <text x="32" y="39" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, 'Times New Roman', serif" font-size="25" font-weight="500" fill="#FFF5DB" opacity=".35" filter="url(#white-glow)">M</text>
+
+  <text x="32" y="39" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, 'Times New Roman', serif" font-size="25" font-weight="500" fill="url(#gold)">M</text>
+</svg>
