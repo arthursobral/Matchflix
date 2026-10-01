@@ -1,0 +1,64 @@
+/* Provisório (M5): só tokens e tamanhos já usados nas telas aprovadas (ver sala.module.css). */
+.main {
+  padding: 40px 0 0;
+}
+
+.main h1 {
+  margin-top: 17px;
+  font: 400 33px/40px var(--font-serif);
+}
+
+.lead {
+  margin-top: 14px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.list {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.list a {
+  color: var(--gold);
+}
+
+.list small {
+  color: var(--text-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.next {
+  margin-top: 32px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.next [role="alert"] {
+  margin-top: 12px;
+}
+
+@media (min-width: 1200px) {
+  .main {
+    width: 640px;
+    padding-top: 72px;
+  }
+
+  .main h1 {
+    margin-top: 6px;
+    font-size: 52px;
+    line-height: 62px;
+  }
+}

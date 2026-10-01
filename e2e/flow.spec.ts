@@ -22,14 +22,17 @@ test("percorre as 5 telas em sequência", async ({ page }) => {
   await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
   // Timeout maior: montar o baralho agora chama o TMDB de verdade (M4), mais lento que
   // a demonstração fixa do M1.
-  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/, { timeout: 25_000 });
 
+  // M5: voto de verdade. Sozinho na sala, aprovar já é unanimidade.
   await page.getByRole("button", { name: /Quero assistir/ }).click();
-  await expect(page).toHaveURL(/\/match$/);
-  await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible();
+  await expect(page).toHaveURL(/\/match\/MFX\d{3}\/\w+$/);
+  // Timeout maior: a tela de match real busca a sala, a rodada e o filme (TMDB) antes de
+  // renderizar — mais lento que o reveal fixo da demonstração.
+  await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible({ timeout: 25_000 });
 
   await page.getByRole("link", { name: "Continuar escolhendo" }).click();
-  await expect(page).toHaveURL(/\/escolher$/);
+  await expect(page).toHaveURL(/\/escolher\/MFX\d{3}$/);
 });
 
 test.describe("Criar sala", () => {
@@ -126,12 +129,12 @@ test.describe("Início de rodada", () => {
 
     // Timeout maior: montar o baralho e buscar os detalhes de cada filme agora chama o
     // TMDB de verdade (M4), mais lento que a demonstração fixa do M1.
-    await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 15_000 });
-    await expect(guestPage).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 15_000 });
+    await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 25_000 });
+    await expect(guestPage).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 25_000 });
 
     // Mesmo baralho, mesma ordem: o primeiro filme é o mesmo para os dois.
-    const hostTitle = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 15_000 });
-    await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!, { timeout: 15_000 });
+    const hostTitle = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 25_000 });
+    await expect(guestPage.getByRole("heading", { level: 1 })).toHaveText(hostTitle!, { timeout: 25_000 });
   });
 
   test("'Mais sobre o filme' leva para a tela de detalhes do mesmo filme", async ({ page }) => {
@@ -139,25 +142,26 @@ test.describe("Início de rodada", () => {
 
     await createTestRoom(page);
     await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
-    await expect(page).toHaveURL(/\/escolher\//, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/escolher\//, { timeout: 25_000 });
 
-    const title = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 15_000 });
+    const title = await page.getByRole("heading", { level: 1 }).textContent({ timeout: 25_000 });
     await page.getByRole("link", { name: /Mais sobre o filme/ }).click();
 
     await expect(page).toHaveURL(/\/filme\/\d+$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(title!);
   });
 
-  test("quem não é anfitrião não consegue iniciar a rodada", async ({ page, browser }) => {
+  test("quem não é anfitrião não vê o botão de começar como clicável", async ({ page, browser }) => {
     test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
 
     const code = await createTestRoom(page);
     const guestPage = await (await browser.newContext()).newPage();
     await joinTestRoom(guestPage, code, "Convidado");
 
-    await guestPage.getByRole("button", { name: "Todos aqui? Começar" }).click();
-
-    await expect(guestPage.locator('p[role="alert"]')).toHaveText("Só o anfitrião pode começar a rodada.");
+    // Marcado como indisponível (mesmo padrão de botão sem ação do design aprovado, com
+    // `aria-disabled`, não o atributo nativo `disabled`) — a pessoa nem consegue clicar; o
+    // Playwright já recusa a ação por "not enabled", prova de que não há nada pra acontecer.
+    await expect(guestPage.getByRole("button", { name: "Todos aqui? Começar" })).toHaveAttribute("aria-disabled", "true");
     await expect(guestPage).toHaveURL(new RegExp(`/sala/${code}$`));
   });
 });

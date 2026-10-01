@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/Button";
-import { joinRoom, RoomExpiredError, RoomNotFoundError } from "@/lib/rooms";
+import { joinRoom, RoomExpiredError, RoomLockedError, RoomNotFoundError } from "@/lib/rooms";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./entrar.module.css";
 
@@ -33,6 +33,7 @@ export function JoinRoom() {
     } catch (err) {
       if (err instanceof RoomNotFoundError) setError(j.notFound);
       else if (err instanceof RoomExpiredError) setError(j.expired);
+      else if (err instanceof RoomLockedError) setError(j.locked);
       else setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
     }

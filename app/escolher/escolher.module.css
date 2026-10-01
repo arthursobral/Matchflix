@@ -174,7 +174,6 @@
 .chip {
   display: grid;
   place-items: center;
-  max-width: 160px;
   height: 34px;
   padding: 0 16px;
   border: 1px solid var(--border);
@@ -182,8 +181,6 @@
   background: var(--surface);
   font-size: 12px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Ações */
@@ -402,11 +399,10 @@
     font-size: 14px;
   }
 
-  .chip {
-    max-width: 180px;
-  }
-
-  .provider > span:last-child {
+  /* Só o texto solto da demonstração ("Incluído na assinatura") empilha embaixo do chip —
+     o `:not(.chip)` é só por segurança, pra nunca pegar um chip de verdade por engano
+     (salas reais usam o cartão de components/WhereToWatch, não este `.chip`). */
+  .provider > span:last-child:not(.chip) {
     display: block;
     margin-top: 13px;
   }

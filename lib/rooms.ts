@@ -15,6 +15,10 @@ export type RoomRef = { roomId: string; code: string; participantId: string };
 
 export class RoomNotFoundError extends Error {}
 export class RoomExpiredError extends Error {}
+/** A sala já deu match: não entra mais ninguém novo (M0, seção 4). */
+export class RoomLockedError extends Error {}
+/** Não sobrou filme inédito nesses gêneros para uma nova rodada. */
+export class DeckExhaustedError extends Error {}
 
 /**
  * Formato de retorno de create_room/join_room, até termos tipos gerados do schema.
@@ -56,6 +60,7 @@ export async function joinRoom(code: string, nickname: string): Promise<RoomRef>
   if (error) {
     if (error.message.includes("sala não encontrada")) throw new RoomNotFoundError(error.message);
     if (error.message.includes("sala expirada")) throw new RoomExpiredError(error.message);
+    if (error.message.includes("sala com match")) throw new RoomLockedError(error.message);
     throw new Error(error.message);
   }
   const row = data as RoomRefRow;
@@ -155,17 +160,47 @@ export function subscribeToRoom(roomId: string, onChange: () => void): () => voi
  */
 export async function startRound(roomId: string, movieIds: string[]): Promise<void> {
   const { error } = await getSupabase().rpc("start_round", { p_room_id: roomId, p_movie_ids: movieIds });
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.message.includes("baralho vazio")) throw new DeckExhaustedError(error.message);
+    throw new Error(error.message);
+  }
 }
 
-/** Baralho da rodada aberta da sala (mesma ordem para todos). `null` se ainda não houver rodada. */
-export async function getActiveRound(roomId: string): Promise<{ id: string; movieIds: string[] } | null> {
+/** Ids de filmes já usados em qualquer rodada da sala (não repetir no próximo baralho). */
+export async function getUsedMovieIds(roomId: string): Promise<string[]> {
+  const { data, error } = await getSupabase().from("round_movies").select("movie_id").eq("room_id", roomId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => r.movie_id as string);
+}
+
+/** Monta um baralho inédito para a sala (TMDB, no servidor) e abre a próxima rodada. Só o anfitrião. */
+export async function startNextRound(room: Pick<Room, "id" | "genres">): Promise<void> {
+  const exclude = await getUsedMovieIds(room.id);
+  const res = await fetch("/api/movies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ genres: room.genres, exclude }),
+  });
+  if (!res.ok) throw new Error("catálogo indisponível");
+  const { movieIds } = (await res.json()) as { movieIds: string[] };
+  await startRound(room.id, movieIds);
+}
+
+export type Round = {
+  id: string;
+  number: number;
+  status: "open" | "finished";
+  /** Baralho na ordem sorteada pelo servidor, a mesma para todos. */
+  movieIds: string[];
+};
+
+/** Rodada mais recente da sala (aberta ou já encerrada). `null` se nenhuma começou. */
+export async function getCurrentRound(roomId: string): Promise<Round | null> {
   const supabase = getSupabase();
   const { data: round, error } = await supabase
     .from("rounds")
-    .select("id")
+    .select("id, number, status")
     .eq("room_id", roomId)
-    .eq("status", "open")
     .order("started_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -179,12 +214,87 @@ export async function getActiveRound(roomId: string): Promise<{ id: string; movi
     .order("position", { ascending: true });
   if (mError) throw new Error(mError.message);
 
-  return { id: round.id, movieIds: (movies ?? []).map((m) => m.movie_id as string) };
+  return { id: round.id, number: round.number, status: round.status, movieIds: (movies ?? []).map((m) => m.movie_id as string) };
 }
 
-/** Ids de filmes já usados em qualquer rodada da sala (não repetir no próximo baralho). */
-export async function getUsedMovieIds(roomId: string): Promise<string[]> {
-  const { data, error } = await getSupabase().from("round_movies").select("movie_id").eq("room_id", roomId);
+/** Grava o voto no servidor. Devolve `true` se ESTE voto fechou a unanimidade (virou match). */
+export async function castVote(roundId: string, movieId: string, approve: boolean): Promise<boolean> {
+  const { data, error } = await getSupabase()
+    .rpc("cast_vote", { p_round_id: roundId, p_movie_id: movieId, p_approve: approve })
+    .single();
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => r.movie_id as string);
+  return (data as { out_matched: boolean }).out_matched;
+}
+
+/** Filmes em que o próprio participante já votou (a RLS só deixa ler os próprios votos). */
+export async function getMyVotedMovieIds(roundId: string): Promise<string[]> {
+  const { data, error } = await getSupabase().from("votes").select("movie_id").eq("round_id", roundId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((v) => v.movie_id as string);
+}
+
+/** Filmes que deram match na rodada, na ordem em que aconteceram. */
+export async function getRoundMatches(roundId: string): Promise<string[]> {
+  const { data, error } = await getSupabase()
+    .from("matches")
+    .select("movie_id")
+    .eq("round_id", roundId)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((m) => m.movie_id as string);
+}
+
+export type RoundSummaryRow = { movieId: string; approvals: number; voters: number; matched: boolean };
+
+/** Aprovações por filme, mais aprovados primeiro — sem revelar quem votou o quê. */
+export async function getRoundSummary(roundId: string): Promise<RoundSummaryRow[]> {
+  const { data, error } = await getSupabase().rpc("round_summary", { p_round_id: roundId });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as { out_movie_id: string; out_approvals: number; out_voters: number; out_matched: boolean }[]).map((r) => ({
+    movieId: r.out_movie_id,
+    approvals: r.out_approvals,
+    voters: r.out_voters,
+    matched: r.out_matched,
+  }));
+}
+
+/**
+ * Assina tudo que muda o estado da rodada para todo mundo: nova rodada, rodada encerrada e
+ * match declarado. Mesma reconciliação ao conectar de `subscribeToParticipants`.
+ */
+export function subscribeToRoundEvents(roomId: string, onChange: () => void): () => void {
+  const filter = `room_id=eq.${roomId}`;
+  const channel = getSupabase()
+    .channel(`room:${roomId}:round`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "rounds", filter }, onChange)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "matches", filter }, onChange)
+    .subscribe((status) => status === "SUBSCRIBED" && onChange());
+  return () => {
+    getSupabase().removeChannel(channel);
+  };
+}
+
+/**
+ * Matches que este aparelho já mostrou (por rodada). A tela de match aparece para todos
+ * assim que acontece; quem já viu e escolheu "Continuar escolhendo" não deve ser mandado
+ * de volta para ela a cada evento. Só conveniência local: se o armazenamento falhar, o pior
+ * caso é ver a tela de match de novo.
+ */
+const seenKey = (roundId: string) => `matchflix:seen-matches:${roundId}`;
+
+export function getSeenMatches(roundId: string): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(seenKey(roundId)) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function markMatchSeen(roundId: string, movieId: string) {
+  try {
+    const seen = new Set(getSeenMatches(roundId)).add(movieId);
+    localStorage.setItem(seenKey(roundId), JSON.stringify([...seen]));
+  } catch {
+    // Sem armazenamento local (aba privada etc.): só significa rever a tela de match.
+  }
 }

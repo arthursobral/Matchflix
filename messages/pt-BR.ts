@@ -123,6 +123,7 @@ export const ptBR = {
     caption: "A sessão de hoje já tem um favorito.",
     watch: "Ver opções para assistir",
     keepGoing: "Continuar escolhendo",
+    providerNote: { flatrate: "Incluído na assinatura", rent: "Para alugar", buy: "Para comprar" },
   },
   join: {
     // Tela provisória: o design ainda não foi aprovado (ver docs/m2-criar-entrar-salas.md).
@@ -137,6 +138,23 @@ export const ptBR = {
     busy: "Entrando…",
     notFound: "Não achamos essa sala. Confira o código.",
     expired: "Essa sala expirou.",
+    locked: "Essa sala já deu match — não entra mais ninguém.",
+  },
+  round: {
+    // Estados provisórios do M5 (esperando a turma, fim da rodada): sem design aprovado
+    // ainda — só texto e componentes já aprovados, sem composição visual nova.
+    waitingTitle: "Você votou em todos.",
+    waitingLead: "Assim que o resto da turma terminar, o resultado da rodada aparece aqui.",
+    endTitle: "Fim da rodada.",
+    matchedLead: "Deram match nesta rodada:",
+    noMatchLead: "Nenhum filme agradou a todos. Os mais aprovados:",
+    approvals: (n: number, total: number) => `${n} de ${total} aprovaram`,
+    nextRound: "Começar nova rodada",
+    waitingHost: "Esperando o anfitrião começar a próxima rodada.",
+    deckExhausted: "Os filmes inéditos desses gêneros acabaram. Crie uma nova sala com outros gêneros.",
+    voteFailed: "Não deu para registrar seu voto. Recarregue a página — os votos já feitos continuam salvos.",
+    loadFailed: "Não deu para carregar os filmes da rodada. Recarregue a página.",
+    notMatch: "Esse filme não deu match nesta rodada.",
   },
   footer: "Uma escolha em comum. Uma noite de cinema.",
   footerAttribution:
