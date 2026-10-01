@@ -73,9 +73,9 @@ export function MatchView({ movie, participants, country, provider, keepGoingHre
               <span>{t.pick.noAvailability}</span>
             )}
           </p>
-          {/* A disponibilidade vem do TMDB/JustWatch; ter o serviço listado não garante que
-              a pessoa tenha assinatura ou acesso a ele. */}
-          <p className={styles.disclaimer}>{t.availabilityDisclaimer}</p>
+          {/* Só na sala real, e só quando há de fato um serviço listado — a demonstração (M1)
+              fica pixel a pixel como já foi aprovada, sem esse texto a mais. */}
+          {watchHref && provider && <p className={styles.disclaimer}>{t.availabilityDisclaimer}</p>}
           <svg className={`${styles.check} mobile-only`} viewBox="0 0 24 24" aria-hidden="true">
             <path d="m5 12 4 4L19 6" />
           </svg>
