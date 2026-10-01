@@ -108,10 +108,14 @@ test.describe("Consenso (M5)", () => {
     }
     await expect(guest.getByText("Esperando o anfitrião começar a próxima rodada.")).toBeVisible();
 
+    // O anfitrião pode trocar o gênero antes da próxima rodada (sala não gostou de "Todos").
+    await page.getByLabel("Terror", { exact: true }).check();
     await page.getByRole("button", { name: "Começar nova rodada" }).click();
     for (const p of [page, guest]) {
       await expect(p.getByText("Rodada 02")).toBeVisible({ timeout: 25_000 });
       await expect(counter(p)).toHaveText(/^01 \//);
+      // O gênero novo vale pra sala inteira, não só pra quem trocou.
+      await expect(p.getByText("Brasil · Terror")).toBeVisible();
     }
   });
 

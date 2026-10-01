@@ -153,12 +153,12 @@ export default function PickPage() {
       .catch(() => setView({ kind: "error", message: t.round.voteFailed }));
   }
 
-  async function nextRound() {
+  async function nextRound(genres: string[]) {
     if (!room) return;
     setStarting(true);
     setStartError(null);
     try {
-      await startNextRound(room);
+      await startNextRound(room, genres);
       apply(await fetchSnapshot(code));
     } catch (e) {
       setStartError(e instanceof DeckExhaustedError ? t.round.deckExhausted : t.room.startFailed);
@@ -169,10 +169,14 @@ export default function PickPage() {
 
   if (view.kind === "error") return <main className={styles.main}>{view.message}</main>;
   if (view.kind === "loading" || !room || !round) return <main className={styles.main}>{t.room.loading}</main>;
-  if (view.kind === "waiting") return <RoundStatus kind="waiting" roundNumber={round.number} />;
+  if (view.kind === "waiting") return <RoundStatus key="waiting" kind="waiting" roundNumber={round.number} />;
   if (view.kind === "ended")
+    // key="ended": garante uma montagem nova ao sair de "waiting" (mesmo componente,
+    // kind diferente) — sem isso, o estado do seletor de gênero nasceria vazio em vez de
+    // partir dos gêneros atuais da sala.
     return (
       <RoundStatus
+        key="ended"
         kind="ended"
         roundNumber={round.number}
         matched={view.matched}
@@ -180,6 +184,7 @@ export default function PickPage() {
         isHost={room.hostUserId === userId}
         starting={starting}
         error={startError}
+        genres={room.genres}
         onNextRound={nextRound}
       />
     );

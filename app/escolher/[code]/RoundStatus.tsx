@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/Button";
+import { GenrePicker } from "@/components/GenrePicker";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./round.module.css";
 
@@ -22,9 +24,14 @@ export function RoundStatus(
         isHost: boolean;
         starting: boolean;
         error: string | null;
-        onNextRound: () => void;
+        /** Gêneros atuais da sala, para pré-marcar o seletor. */
+        genres: string[];
+        onNextRound: (genres: string[]) => void;
       },
 ) {
+  // Só importa para o anfitrião; inicializado aqui mesmo (não precisa subir pro componente pai).
+  const [genres, setGenres] = useState(props.kind === "ended" ? props.genres : []);
+
   return (
     <main className={styles.main}>
       <p className="eyebrow">{t.pick.round(props.roundNumber)}</p>
@@ -47,9 +54,13 @@ export function RoundStatus(
           </ul>
           <div className={styles.next}>
             {props.isHost ? (
-              <Button icon="arrow" onClick={() => !props.starting && props.onNextRound()}>
-                {r.nextRound}
-              </Button>
+              <>
+                <p className={styles.changeGenres}>{r.changeGenres}</p>
+                <GenrePicker genres={genres} onChange={setGenres} />
+                <Button icon="arrow" onClick={() => !props.starting && props.onNextRound(genres)}>
+                  {r.nextRound}
+                </Button>
+              </>
             ) : (
               <p>{r.waitingHost}</p>
             )}

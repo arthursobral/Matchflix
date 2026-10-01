@@ -149,6 +149,7 @@ export const ptBR = {
     matchedLead: "Deram match nesta rodada:",
     noMatchLead: "Nenhum filme agradou a todos. Os mais aprovados:",
     approvals: (n: number, total: number) => `${n} de ${total} aprovaram`,
+    changeGenres: "Quer mudar os gêneros antes da próxima rodada?",
     nextRound: "Começar nova rodada",
     waitingHost: "Esperando o anfitrião começar a próxima rodada.",
     deckExhausted: "Os filmes inéditos desses gêneros acabaram. Crie uma nova sala com outros gêneros.",
