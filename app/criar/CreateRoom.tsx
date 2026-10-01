@@ -3,21 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/Button";
+import { GenrePicker } from "@/components/GenrePicker";
 import { NicknamePrompt } from "@/components/NicknamePrompt";
 import { createRoom } from "@/lib/rooms";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./create.module.css";
 
 const c = t.create;
-
-/** "Todos" é exclusivo; sem nenhum gênero marcado volta a "Todos". */
-function toggleGenre(current: string[], value: string) {
-  if (value === c.genres.all) return [c.genres.all];
-  const next = current.includes(value)
-    ? current.filter((g) => g !== value)
-    : [...current.filter((g) => g !== c.genres.all), value];
-  return next.length ? next : [c.genres.all];
-}
 
 export function CreateRoom() {
   const router = useRouter();
@@ -112,27 +104,7 @@ export function CreateRoom() {
           </div>
         </div>
 
-        <div role="group" aria-labelledby="genres-label" className={styles.genreGroup}>
-          <div className={styles.groupHead}>
-            <p id="genres-label" className={styles.groupLabel}>
-              {c.genres.label}
-            </p>
-            <span className={styles.hint}>{c.genres.hint}</span>
-          </div>
-          <div className={styles.genres}>
-            {c.genres.options.map((o) => (
-              <label key={o.value} className={styles.pill}>
-                <input
-                  type="checkbox"
-                  value={o.value}
-                  checked={genres.includes(o.value)}
-                  onChange={() => setGenres((g) => toggleGenre(g, o.value))}
-                />
-                <span>{o.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <GenrePicker genres={genres} onChange={setGenres} />
 
         <p className={`${styles.help} desktop-only`}>{c.genres.help}</p>
 

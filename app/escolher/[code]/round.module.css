@@ -46,8 +46,16 @@
   font-size: 14px;
 }
 
+.changeGenres {
+  font-size: 13px;
+}
+
 .next [role="alert"] {
   margin-top: 12px;
+}
+
+.next button[type="button"] {
+  margin-top: 24px;
 }
 
 @media (min-width: 1200px) {

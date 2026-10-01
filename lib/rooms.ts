@@ -174,16 +174,29 @@ export async function getUsedMovieIds(roomId: string): Promise<string[]> {
 }
 
 /** Monta um baralho inédito para a sala (TMDB, no servidor) e abre a próxima rodada. Só o anfitrião. */
-export async function startNextRound(room: Pick<Room, "id" | "genres">): Promise<void> {
+/**
+ * `genres`, quando passado, troca o gênero da sala antes de montar o baralho (pedido na
+ * tela de fim de rodada — perceber que um gênero não está agradando e trocar para o
+ * próximo). Sem isso, usa o gênero já salvo na sala (início normal da primeira rodada).
+ */
+export async function startNextRound(room: Pick<Room, "id" | "genres">, genres?: string[]): Promise<void> {
+  const useGenres = genres ?? room.genres;
+  if (genres) await updateRoomGenres(room.id, genres);
   const exclude = await getUsedMovieIds(room.id);
   const res = await fetch("/api/movies", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ genres: room.genres, exclude }),
+    body: JSON.stringify({ genres: useGenres, exclude }),
   });
   if (!res.ok) throw new Error("catálogo indisponível");
   const { movieIds } = (await res.json()) as { movieIds: string[] };
   await startRound(room.id, movieIds);
+}
+
+/** Só o anfitrião troca os gêneros da sala — verificado no servidor. */
+export async function updateRoomGenres(roomId: string, genres: string[]): Promise<void> {
+  const { error } = await getSupabase().rpc("update_room_genres", { p_room_id: roomId, p_genres: genres });
+  if (error) throw new Error(error.message);
 }
 
 export type Round = {
