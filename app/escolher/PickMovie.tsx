@@ -226,7 +226,9 @@ export function PickMovie({ movies: realMovies, round }: Props) {
             <div className={styles.provider}>
               {isReal ? (
                 movie.providers ? (
-                  [...movie.providers.flatrate, ...movie.providers.rent, ...movie.providers.buy]
+                  // O mesmo provedor costuma aparecer em mais de uma categoria (ex.: "Amazon
+                  // Video" em aluguel e compra) — sem isso, a chave duplicada quebra o React.
+                  [...new Map([...movie.providers.flatrate, ...movie.providers.rent, ...movie.providers.buy].map((prov) => [prov.name, prov])).values()]
                     .slice(0, 3)
                     .map((prov) => (
                       <span key={prov.name} className={styles.chip}>

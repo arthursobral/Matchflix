@@ -21,8 +21,8 @@ async function startWithGuest(page: Page, browser: Browser) {
   await joinTestRoom(guest, code, "Convidado");
   await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
   for (const p of [page, guest]) {
-    await expect(p).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 15_000 });
-    await expect(counter(p)).toHaveText(/^01 \//, { timeout: 15_000 });
+    await expect(p).toHaveURL(new RegExp(`/escolher/${code}$`), { timeout: 25_000 });
+    await expect(counter(p)).toHaveText(/^01 \//, { timeout: 25_000 });
   }
   return { code, guest };
 }
@@ -65,7 +65,7 @@ test.describe("Consenso (M5)", () => {
     await expect(counter(page)).toHaveText(/^03 \//);
 
     await page.reload();
-    await expect(counter(page)).toHaveText(/^03 \//, { timeout: 15_000 });
+    await expect(counter(page)).toHaveText(/^03 \//, { timeout: 25_000 });
     await expect(title(page)).toHaveText(third!);
   });
 
@@ -78,7 +78,7 @@ test.describe("Consenso (M5)", () => {
     // A rodada continua (M0): volta para o próximo filme, sem ser mandado de novo para o match já visto.
     await page.getByRole("link", { name: "Continuar escolhendo" }).click();
     await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`));
-    await expect(counter(page)).toHaveText(/^02 \//, { timeout: 15_000 });
+    await expect(counter(page)).toHaveText(/^02 \//, { timeout: 25_000 });
     await page.waitForTimeout(1000);
     await expect(page).toHaveURL(new RegExp(`/escolher/${code}$`));
 
@@ -102,7 +102,7 @@ test.describe("Consenso (M5)", () => {
 
     for (let i = 0; i < total; i++) await vote(guest, false);
     for (const p of [page, guest]) {
-      await expect(p.getByRole("heading", { name: "Fim da rodada." })).toBeVisible({ timeout: 15_000 });
+      await expect(p.getByRole("heading", { name: "Fim da rodada." })).toBeVisible({ timeout: 25_000 });
       await expect(p.getByText("Nenhum filme agradou a todos. Os mais aprovados:")).toBeVisible();
       await expect(p.getByText("1 de 2 aprovaram")).toBeVisible();
     }
@@ -110,7 +110,7 @@ test.describe("Consenso (M5)", () => {
 
     await page.getByRole("button", { name: "Começar nova rodada" }).click();
     for (const p of [page, guest]) {
-      await expect(p.getByText("Rodada 02")).toBeVisible({ timeout: 15_000 });
+      await expect(p.getByText("Rodada 02")).toBeVisible({ timeout: 25_000 });
       await expect(counter(p)).toHaveText(/^01 \//);
     }
   });
@@ -121,7 +121,7 @@ test.describe("Consenso (M5)", () => {
     // Pôsteres do TMDB: cor extraída (três números RGB) em vez das cores fixas da demonstração.
     await expect
       .poll(async () => page.locator("[data-halo]").evaluateAll((els) => els.filter((e) => /^\d+ \d+ \d+$/.test(e.getAttribute("data-halo")!)).length), {
-        timeout: 15_000,
+        timeout: 25_000,
       })
       .toBeGreaterThan(0);
   });

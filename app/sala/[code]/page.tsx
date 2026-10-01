@@ -148,9 +148,17 @@ export default function RoomPage() {
         </p>
 
         <div className={styles.start}>
-          <Button icon="arrow" onClick={handleStart}>
-            {r.start}
-          </Button>
+          {room.hostUserId === userId ? (
+            <Button icon="arrow" onClick={handleStart}>
+              {r.start}
+            </Button>
+          ) : (
+            // Só o anfitrião inicia a rodada (verificado no servidor); para os demais o botão
+            // já nasce no estado "indisponível" do design aprovado, em vez de errar ao clicar.
+            <Button icon="arrow" unavailableHint={r.startNoteMobile}>
+              {r.start}
+            </Button>
+          )}
           {startError ? (
             <p role="alert">{startError}</p>
           ) : (
