@@ -136,6 +136,12 @@
   font-size: 11px;
 }
 
+.disclaimer {
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 11px;
+}
+
 .check {
   position: absolute;
   right: 20px;

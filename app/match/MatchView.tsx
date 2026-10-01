@@ -15,10 +15,16 @@ type Props = {
   provider: { name: string; note: string } | null;
   keepGoingHref: string;
   haloBackground: string;
+  /**
+   * Página do filme no TMDB — é pra lá que "Ver opções para assistir" leva (os termos do
+   * TMDB não permitem link direto pro serviço de streaming). `null` na demonstração (M1),
+   * que mantém o botão "Em breve" original.
+   */
+  watchHref: string | null;
 };
 
 /** Composição aprovada da tela de match (M1), com os dados vindos de fora. */
-export function MatchView({ movie, participants, country, provider, keepGoingHref, haloBackground }: Props) {
+export function MatchView({ movie, participants, country, provider, keepGoingHref, haloBackground, watchHref }: Props) {
   const total = participants.length;
   const names = new Intl.ListFormat("pt-BR", { style: "long", type: "conjunction" }).format(participants.map((p) => p.name));
 
@@ -67,16 +73,25 @@ export function MatchView({ movie, participants, country, provider, keepGoingHre
               <span>{t.pick.noAvailability}</span>
             )}
           </p>
+          {/* A disponibilidade vem do TMDB/JustWatch; ter o serviço listado não garante que
+              a pessoa tenha assinatura ou acesso a ele. */}
+          <p className={styles.disclaimer}>{t.availabilityDisclaimer}</p>
           <svg className={`${styles.check} mobile-only`} viewBox="0 0 24 24" aria-hidden="true">
             <path d="m5 12 4 4L19 6" />
           </svg>
         </div>
 
         <div className={styles.buttons}>
-          {/* Os links reais de streaming chegam no M6; até lá o botão avisa "Em breve". */}
-          <SoonButton icon="arrow" soonLabel={t.nav.soon}>
-            {m.watch}
-          </SoonButton>
+          {watchHref ? (
+            // Vai pra página do filme no TMDB, nunca direto pro serviço (termos de uso).
+            <Button icon="arrow" href={watchHref}>
+              {m.watch}
+            </Button>
+          ) : (
+            <SoonButton icon="arrow" soonLabel={t.nav.soon}>
+              {m.watch}
+            </SoonButton>
+          )}
           <Button variant="secondary" href={keepGoingHref}>
             {m.keepGoing}
           </Button>
