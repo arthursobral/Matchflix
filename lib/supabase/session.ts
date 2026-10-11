@@ -1,4 +1,5 @@
 import { getSupabase } from "./client";
+import { getCaptchaToken } from "./captcha";
 
 /**
  * Garante uma sessão anônima e devolve o user_id, que identifica o participante
@@ -12,7 +13,8 @@ export async function ensureAnonymousSession(): Promise<string> {
   } = await supabase.auth.getSession();
   if (session?.user) return session.user.id;
 
-  const { data, error } = await supabase.auth.signInAnonymously();
+  const captchaToken = await getCaptchaToken();
+  const { data, error } = await supabase.auth.signInAnonymously(captchaToken ? { options: { captchaToken } } : undefined);
   if (error || !data.user) {
     const reason = error?.message ?? "resposta sem usuário";
     throw new Error(`Não foi possível iniciar a sessão (${reason}). Verifique a URL/chave do Supabase e se o login anônimo está habilitado.`);
