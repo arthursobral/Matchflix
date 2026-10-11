@@ -4,7 +4,7 @@ interface TurnstileOptions {
   sitekey: string;
   theme?: "light" | "dark" | "auto";
   callback: (token: string) => void;
-  "error-callback"?: () => void;
+  "error-callback"?: (code: string) => void;
   "before-interactive-callback"?: () => void;
 }
 
@@ -55,7 +55,9 @@ export async function getCaptchaToken(): Promise<string | undefined> {
     Object.assign(overlay.style, {
       position: "fixed",
       inset: "0",
-      display: "none",
+      display: "flex",
+      opacity: "0",
+      pointerEvents: "none",
       alignItems: "center",
       justifyContent: "center",
       background: "rgb(22 22 24 / 0.85)",
@@ -80,15 +82,17 @@ export async function getCaptchaToken(): Promise<string | undefined> {
       sitekey,
       theme: "dark",
       "before-interactive-callback": () => {
-        overlay.style.display = "flex";
+        overlay.style.opacity = "1";
+        overlay.style.pointerEvents = "auto";
       },
       callback: (token) => {
         cleanup(widgetId);
         resolve(token);
       },
-      "error-callback": () => {
+      "error-callback": (code) => {
         cleanup(widgetId);
-        reject(new Error("Verificação de segurança falhou. Tente de novo."));
+        console.error("Turnstile error", code);
+        reject(new Error(`Verificação de segurança falhou (erro ${code}). Tente de novo.`));
       },
     });
   });
