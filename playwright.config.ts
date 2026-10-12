@@ -12,7 +12,8 @@ const envLocal = path.join(__dirname, ".env.local");
 if (fs.existsSync(envLocal)) {
   for (const line of fs.readFileSync(envLocal, "utf8").split("\n")) {
     const m = line.match(/^([\w.-]+)\s*=\s*(.+)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
+    // `=== undefined`: uma variável definida vazia de propósito (ex.: desligar o CAPTCHA) vence o .env.local.
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].trim();
   }
 }
 

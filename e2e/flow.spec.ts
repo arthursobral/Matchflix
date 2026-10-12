@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Route } from "@playwright/test";
 import { hasSupabase, hasTmdb } from "../playwright.config";
 import { createTestRoom, joinTestRoom } from "./helpers";
 
@@ -115,6 +115,42 @@ test.describe("Entrar por código", () => {
     await page.getByRole("button", { name: "Juntar-se" }).click();
     await expect(page.locator('p[role="alert"]')).toHaveText("Não achamos essa sala. Confira o código.");
   });
+
+  // O CAPTCHA depende da rede até o Cloudflare: quando ela falha, a pessoa precisa de
+  // uma mensagem clara e de um "tente de novo" que funcione sem recarregar a página.
+  for (const failure of [
+    {
+      name: "desafio do Cloudflare que nunca responde não prende a entrada na sala",
+      urls: "https://challenges.cloudflare.com/cdn-cgi/challenge-platform/**",
+      // Nem sucesso nem erro: o pedido fica pendurado (rede instável, firewall).
+      block: () => undefined,
+      message: /demorou demais/,
+    },
+    {
+      name: "script do Cloudflare que falha ao carregar pode ser carregado de novo",
+      urls: "https://challenges.cloudflare.com/turnstile/**",
+      block: (route: Route) => route.abort(),
+      message: /Não foi possível carregar a verificação de segurança/,
+    },
+  ]) {
+    test(failure.name, async ({ page, browser }) => {
+      test.skip(!hasSupabase || !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY, "precisa de Supabase e de NEXT_PUBLIC_TURNSTILE_SITE_KEY");
+      test.setTimeout(60_000);
+      const code = await createTestRoom(page);
+
+      let offline = true;
+      const guest = await (await browser.newContext()).newPage();
+      await guest.route(failure.urls, (route) => (offline ? failure.block(route) : route.continue()));
+      await guest.goto(`/entrar?codigo=${code}`);
+      await guest.getByLabel("Seu apelido", { exact: true }).fill("Convidado");
+      await guest.getByRole("button", { name: "Juntar-se" }).click();
+      await expect(guest.locator('p[role="alert"]')).toHaveText(failure.message, { timeout: 25_000 });
+
+      offline = false;
+      await guest.getByRole("button", { name: "Juntar-se" }).click();
+      await expect(guest).toHaveURL(new RegExp(`/sala/${code}$`), { timeout: 15_000 });
+    });
+  }
 });
 
 test.describe("Início de rodada", () => {

@@ -44,16 +44,20 @@ export default function RoomMatchPage() {
       const movie = await resolveMovie(movieId, result.room.country);
       if (!movie) return setError(t.round.notMatch);
       markMatchSeen(round.id, movieId);
-
-      const color = movie.poster.src.startsWith("https://image.tmdb.org/") ? await posterColor(movie.poster.src) : null;
       if (cancelled) return;
       document.title = `${t.match.title} — Matchflix`;
       setData({
         movie,
         participants: result.participants.map((p) => ({ name: p.nickname, initials: initialsOf(p.nickname), host: p.isHost })),
         country: countryLabel(result.room.country),
-        halo: color ? haloGradient(color) : `var(--halo-${movie.halo})`,
+        halo: `var(--halo-${movie.halo})`,
       });
+
+      // A cor do halo entra quando o pôster chegar: a tela não espera por ela (um CDN de
+      // imagens lento ou travado não pode deixar o match preso em "Carregando…").
+      if (!movie.poster.src.startsWith("https://image.tmdb.org/")) return;
+      const color = await posterColor(movie.poster.src);
+      if (color && !cancelled) setData((d) => d && { ...d, halo: haloGradient(color) });
     })().catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
     return () => {
       cancelled = true;

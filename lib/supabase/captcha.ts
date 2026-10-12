@@ -1,10 +1,12 @@
 const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+const TOO_SLOW = "A verificação de segurança demorou demais. Confira sua conexão e tente de novo.";
 
 interface TurnstileOptions {
   sitekey: string;
   theme?: "light" | "dark" | "auto";
   callback: (token: string) => void;
   "error-callback"?: (code: string) => void;
+  "timeout-callback"?: () => void;
   "before-interactive-callback"?: () => void;
 }
 
@@ -30,7 +32,10 @@ function loadTurnstileScript(): Promise<void> {
       script.src = TURNSTILE_SRC;
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Não foi possível carregar a verificação de segurança."));
+      script.onerror = () => {
+        scriptPromise = null; // senão o erro fica memorizado e o "tente de novo" nunca funciona
+        reject(new Error("Não foi possível carregar a verificação de segurança. Confira sua conexão e tente de novo."));
+      };
       document.head.appendChild(script);
     });
   }
@@ -44,13 +49,12 @@ function loadTurnstileScript(): Promise<void> {
  * Sem NEXT_PUBLIC_TURNSTILE_SITE_KEY configurada, resolve undefined (ex.: dev local
  * com o captcha desligado no painel do Supabase).
  */
-export async function getCaptchaToken(): Promise<string | undefined> {
+export function getCaptchaToken(timeoutMs = 15_000): Promise<string | undefined> {
   const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  if (!sitekey) return undefined;
-
-  await loadTurnstileScript();
+  if (!sitekey) return Promise.resolve(undefined);
 
   return new Promise((resolve, reject) => {
+    // Escondido por opacidade, não display:none (o widget do Turnstile pode falhar assim).
     const overlay = document.createElement("div");
     Object.assign(overlay.style, {
       position: "fixed",
@@ -73,27 +77,43 @@ export async function getCaptchaToken(): Promise<string | undefined> {
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
-    const cleanup = (widgetId: string) => {
-      window.turnstile?.remove(widgetId);
+    let widgetId: string | undefined;
+    let done = false;
+    const finish = (settle: () => void) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      if (widgetId) window.turnstile?.remove(widgetId);
       overlay.remove();
+      settle();
     };
+    const fail = (message: string) => finish(() => reject(new Error(message)));
 
-    const widgetId = window.turnstile!.render(box, {
-      sitekey,
-      theme: "dark",
-      "before-interactive-callback": () => {
-        overlay.style.opacity = "1";
-        overlay.style.pointerEvents = "auto";
+    // Se o Cloudflare não responder (rede instável, bloqueador), ninguém chama de volta:
+    // sem esse limite a pessoa ficaria presa em "Entrando…" para sempre.
+    const timer = setTimeout(() => fail(TOO_SLOW), timeoutMs);
+
+    loadTurnstileScript().then(
+      () => {
+        if (done) return;
+        widgetId = window.turnstile!.render(box, {
+          sitekey,
+          theme: "dark",
+          "before-interactive-callback": () => {
+            // Agora depende da pessoa resolver o desafio; o próprio Turnstile avisa se expirar.
+            clearTimeout(timer);
+            overlay.style.opacity = "1";
+            overlay.style.pointerEvents = "auto";
+          },
+          callback: (token) => finish(() => resolve(token)),
+          "error-callback": (code) => {
+            console.error("Turnstile error", code);
+            fail(`Verificação de segurança falhou (erro ${code}). Tente de novo.`);
+          },
+          "timeout-callback": () => fail(TOO_SLOW),
+        });
       },
-      callback: (token) => {
-        cleanup(widgetId);
-        resolve(token);
-      },
-      "error-callback": (code) => {
-        cleanup(widgetId);
-        console.error("Turnstile error", code);
-        reject(new Error(`Verificação de segurança falhou (erro ${code}). Tente de novo.`));
-      },
-    });
+      (e: Error) => fail(e.message),
+    );
   });
 }
