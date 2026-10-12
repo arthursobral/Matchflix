@@ -203,6 +203,24 @@
   text-align: center;
 }
 
+/* Celular: os botões vêm logo depois da sinopse, para escolher sem rolar a tela; "Onde
+   assistir" fica embaixo deles (pedido do usuário, 12/10/2026). A .detail deixa de ser caixa
+   e seus filhos entram direto na ordem do .layout. */
+@media (max-width: 1199px) {
+  .detail {
+    display: contents;
+  }
+
+  .summary {
+    order: 2;
+    margin-top: 12px;
+  }
+
+  .where {
+    order: 4;
+  }
+}
+
 @media (min-width: 1200px) {
   .main {
     padding-top: 31px;
@@ -334,17 +352,19 @@
   }
 
   /* Ações */
+  /* Mesma largura do pôster, com os botões (mais largos que ele) centralizados embaixo dele. */
   .actions {
     grid-column: 3;
     grid-row: 2;
     order: 0;
+    width: 312px;
     margin: 36px 0 0;
   }
 
   .buttons {
     grid-template-columns: 147px 180px;
+    justify-content: center;
     gap: 14px;
-    margin-left: -2px;
   }
 
   .actions p {
