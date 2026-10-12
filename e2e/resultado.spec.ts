@@ -37,6 +37,36 @@ test.describe("Resultado e opções para assistir (M6)", () => {
     expect(page.url()).toBe(url);
   });
 
+  test("pôster travado no CDN do TMDB não prende a tela de match", async ({ page }) => {
+    test.skip(!hasTmdb, "precisa de TMDB_API_KEY configurada (.env.local) para ter pôster real");
+    await reachMatch(page);
+    // Imagens do TMDB que nunca respondem (nem erro, nem sucesso), como num CDN engasgado.
+    await page.route("https://image.tmdb.org/**", () => {});
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { level: 2 })).not.toBeEmpty();
+  });
+
+  test("pôster lento: a tela de match aparece na hora e a cor do halo chega depois", async ({ page }) => {
+    test.skip(!hasTmdb, "precisa de TMDB_API_KEY configurada (.env.local) para ter pôster real");
+    test.setTimeout(60_000);
+    await reachMatch(page);
+    const colored = page.locator('div[style*="gradient("]');
+    const hasColor = await colored.waitFor({ timeout: 15_000 }).then(() => true, () => false);
+    test.skip(!hasColor, "pôster sorteado não tem cor dominante (halo neutro de propósito)");
+
+    await page.route("https://image.tmdb.org/**", async (route) => {
+      await new Promise((r) => setTimeout(r, 6000));
+      await route.continue().catch(() => {}); // a página pode já ter fechado
+    });
+    await page.reload();
+    // Antes de o pôster chegar: tela pronta, halo ainda neutro.
+    await expect(page.getByRole("heading", { name: "Deu match." })).toBeVisible({ timeout: 5_000 });
+    await expect(colored).toHaveCount(0);
+    // Depois: a cor do pôster não se perde só porque a imagem demorou.
+    await expect(colored).toHaveCount(1, { timeout: 20_000 });
+  });
+
   test("aviso de disponibilidade aparece junto do provedor, quando há um", async ({ page }) => {
     test.skip(!hasTmdb, "precisa de TMDB_API_KEY configurada (.env.local) para ter provedor real");
     await reachMatch(page);
