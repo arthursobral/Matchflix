@@ -116,6 +116,28 @@ test.describe("Entrar por código", () => {
     await expect(page.locator('p[role="alert"]')).toHaveText("Não achamos essa sala. Confira o código.");
   });
 
+  test("desafio interativo do Cloudflare aparece por cima do modal e pode ser resolvido", async ({ page }) => {
+    // Chave de teste do Cloudflare que sempre pede interação (como acontece com quem parece robô).
+    test.skip(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== "3x00000000000000000000FF", "rode com NEXT_PUBLIC_TURNSTILE_SITE_KEY=3x00000000000000000000FF");
+    test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+    await page.goto("/criar");
+    await page.getByRole("button", { name: "Criar sala e convidar" }).click();
+    await page.getByLabel("Seu apelido", { exact: true }).fill("Teste");
+    await page.getByRole("button", { name: "Criar sala", exact: true }).click();
+    // O modal do apelido é um <dialog> (camada de cima, resto da página inerte): o quadro do
+    // desafio tem que ficar por cima dele, senão ninguém consegue resolver e a sala nunca é criada.
+    const overlay = page.locator('div[style*="z-index: 9999"]');
+    await expect(overlay).toHaveCSS("opacity", "1", { timeout: 20_000 });
+    await page.waitForTimeout(2000); // o widget do Cloudflare termina de desenhar
+    const box = await overlay.evaluate((o) => {
+      const r = o.firstElementChild!.getBoundingClientRect();
+      return { x: r.x, y: r.y, h: r.height, onTop: o.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
+    });
+    expect(box.onTop, "o desafio ficou escondido atrás de outra coisa").toBe(true);
+    await page.mouse.click(box.x + 48, box.y + box.h / 2); // a caixinha "confirme que é humano"
+    await page.waitForURL(/\/sala\//, { timeout: 20_000 });
+  });
+
   // O CAPTCHA depende da rede até o Cloudflare: quando ela falha, a pessoa precisa de
   // uma mensagem clara e de um "tente de novo" que funcione sem recarregar a página.
   for (const failure of [
