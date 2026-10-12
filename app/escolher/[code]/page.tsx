@@ -138,9 +138,13 @@ export default function PickPage() {
     // Falha de rede passageira num evento: o próximo evento (ou recarregar) reconcilia.
     const offRound = subscribeToRoundEvents(roomId, () => void onRoundEvent().catch(() => {}));
     const offCrew = subscribeToParticipants(roomId, () => void onCrewChange().catch(() => {}));
+    // O tempo real não garante entrega: um aviso perdido deixaria alguém esperando para
+    // sempre o fim da rodada (ou sem ver o match). Confere de novo a cada 10s.
+    const poll = setInterval(() => void onRoundEvent().catch(() => {}), 10_000);
     return () => {
       offRound();
       offCrew();
+      clearInterval(poll);
     };
   }, [roomId]);
 

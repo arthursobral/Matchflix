@@ -19,7 +19,7 @@ for (const [device, viewport] of [
   test.describe(`Acessibilidade (${device})`, () => {
     test.use({ viewport });
 
-    for (const path of ["/", "/criar", "/entrar", "/escolher", "/match"]) {
+    for (const path of ["/", "/criar", "/entrar", "/escolher", "/match", "/pagina-que-nao-existe"]) {
       test(`${path}`, async ({ page }) => {
         await page.goto(path);
         await page.waitForLoadState("networkidle");

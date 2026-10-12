@@ -178,6 +178,58 @@ test.describe("Tempo real cai e volta (M8)", () => {
   });
 });
 
+test.describe("Aviso de tempo real perdido, com a conexão de pé (M8)", () => {
+  test.skip(!hasSupabase, "precisa de um projeto Supabase configurado (.env.local)");
+  test.use({ viewport: { width: 1440, height: 1000 } });
+
+  /** Mantém o canal conectado, mas descarta todo aviso de mudança no banco que chegaria à página. */
+  async function dropDatabaseEvents(p: Page) {
+    await p.routeWebSocket(/\/realtime\/v1\/websocket/, (ws) => {
+      const server = ws.connectToServer();
+      server.onMessage((msg) => {
+        let event: unknown;
+        try {
+          const parsed = JSON.parse(String(msg));
+          event = Array.isArray(parsed) ? parsed[3] : parsed.event;
+        } catch {}
+        if (event !== "postgres_changes") ws.send(msg);
+      });
+    });
+  }
+
+  const counter = (p: Page) => p.getByText(/^\d+ \/ \d+ filmes$/);
+  async function vote(p: Page) {
+    const saved = p.waitForResponse((r) => r.url().includes("/rpc/cast_vote") && r.ok());
+    await p.keyboard.press("ArrowLeft");
+    await saved;
+  }
+
+  test("sala de espera: quem entrou aparece mesmo sem o aviso chegar", async ({ page, browser }) => {
+    await dropDatabaseEvents(page);
+    const code = await createTestRoom(page);
+    await joinTestRoom(await (await browser.newContext()).newPage(), code, "Convidado");
+    await expect(page.locator("li")).toHaveCount(2, { timeout: 15_000 });
+  });
+
+  test("esperando a turma: o fim da rodada aparece mesmo sem o aviso chegar", async ({ page, browser }) => {
+    test.setTimeout(120_000);
+    await dropDatabaseEvents(page);
+    const code = await createTestRoom(page);
+    const guest = await (await browser.newContext({ viewport: { width: 1440, height: 1000 } })).newPage();
+    await joinTestRoom(guest, code, "Convidado");
+    await expect(page.locator("li")).toHaveCount(2, { timeout: 15_000 });
+    await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
+    for (const p of [page, guest]) await expect(counter(p)).toHaveText(/^01 \//, { timeout: 25_000 });
+    const total = Number((await counter(page).textContent())!.match(/\/ (\d+)/)![1]);
+
+    for (let i = 0; i < total; i++) await vote(page);
+    await expect(page.getByRole("heading", { name: "Você votou em todos." })).toBeVisible();
+    for (let i = 0; i < total; i++) await vote(guest);
+    await expect(guest.getByRole("heading", { name: "Fim da rodada." })).toBeVisible({ timeout: 25_000 });
+    await expect(page.getByRole("heading", { name: "Fim da rodada." })).toBeVisible({ timeout: 15_000 });
+  });
+});
+
 test.describe("Tela de detalhes com o catálogo fora do ar (M8)", () => {
   test("TMDB fora do ar não vira 'filme não encontrado'", async ({ page }) => {
     test.skip(!hasTmdb, "precisa de TMDB_API_KEY configurada (.env.local)");

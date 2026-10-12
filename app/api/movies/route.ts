@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     const movieIds = await discoverMovieIds({ genres, exclude });
     return NextResponse.json({ movieIds });
   } catch (e) {
+    console.error("api/movies: TMDB falhou ao montar o baralho", e);
     return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 502 });
   }
 }

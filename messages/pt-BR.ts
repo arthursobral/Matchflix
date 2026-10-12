@@ -161,6 +161,22 @@ export const ptBR = {
   footerAttribution:
     "Dados de filmes: TMDB · Disponibilidade: JustWatch. Este produto usa a API do TMDB, mas não é endossado ou certificado por ela.",
   availabilityDisclaimer: "A disponibilidade vem do TMDB/JustWatch e pode mudar; não garante que você já tenha acesso a esse serviço.",
+  // Telas de erro e de "página não encontrada": provisórias, sem design aprovado — só o
+  // padrão etiqueta + título + texto + Button já usado nas outras telas de estado.
+  status: {
+    notFound: {
+      eyebrow: "Página não encontrada",
+      title: "Essa página não existe.",
+      lead: "Confira o endereço ou volte para o início.",
+    },
+    error: {
+      eyebrow: "Erro inesperado",
+      title: "Algo deu errado.",
+      lead: "Tente de novo. Se continuar acontecendo, recarregue a página.",
+    },
+    retry: "Tentar de novo",
+    home: "Voltar ao início",
+  },
   network: {
     offline: "Sem conexão com o servidor. Confira sua internet e tente de novo.",
     catalog: "O catálogo de filmes não respondeu. Tente de novo em instantes.",
