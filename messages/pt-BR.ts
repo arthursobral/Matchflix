@@ -65,7 +65,7 @@ export const ptBR = {
       title: "Como podemos te chamar?",
       lead: "Seu apelido aparece pra sua turma na sala.",
       label: "Seu apelido",
-      placeholder: "Ex.: Arthur",
+      placeholder: "Ex.: Marina",
       confirm: "Criar sala",
       busy: "Criando…",
       cancel: "Voltar",
