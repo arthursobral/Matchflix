@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/Button";
 import { WhereToWatch } from "@/components/WhereToWatch";
+import { userMessage } from "@/lib/errors";
 import { ptBR as t } from "@/messages/pt-BR";
 import { getMovieDetails, type MovieDetails } from "./data";
 import styles from "./filme.module.css";
@@ -20,15 +21,16 @@ function formatRuntime(minutes: number) {
 export default function MovieDetailsPage() {
   const { tmdbId } = useParams<{ tmdbId: string }>();
   const router = useRouter();
-  // undefined = ainda carregando, null = não encontrado (mesmo valor que a função já usa
-  // pra dizer isso), objeto = carregado — sem precisar de um estado de erro à parte.
+  // undefined = ainda carregando, null = não encontrado, objeto = carregado. Falha de rede
+  // ou do catálogo é outra coisa (`error`): o filme pode existir.
   const [movie, setMovie] = useState<MovieDetails | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     getMovieDetails(tmdbId)
       .then((result) => !cancelled && setMovie(result))
-      .catch(() => !cancelled && setMovie(null));
+      .catch((e) => !cancelled && setError(userMessage(e)));
     return () => {
       cancelled = true;
     };
@@ -46,11 +48,11 @@ export default function MovieDetailsPage() {
 
   // Estados de carregamento e "não encontrado" seguem o mesmo texto simples sem design
   // próprio usado em app/sala/[code]/page.tsx (M1) — esta tela também é um rascunho.
-  if (movie === undefined) return <main className={styles.main}>{d.loading}</main>;
-  if (movie === null)
+  if (movie === undefined && !error) return <main className={styles.main}>{d.loading}</main>;
+  if (!movie)
     return (
       <main className={styles.main}>
-        <p>{d.notFound}</p>
+        <p>{error ?? d.notFound}</p>
         <div className={styles.actions}>{back}</div>
       </main>
     );

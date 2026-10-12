@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { userMessage } from "@/lib/errors";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
 import styles from "./NicknamePrompt.module.css";
@@ -35,7 +36,7 @@ export function NicknamePrompt({ title, lead, label, placeholder, confirmLabel, 
     try {
       await onConfirm(trimmed);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(userMessage(e));
       setBusy(false);
     }
   }

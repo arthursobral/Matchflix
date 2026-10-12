@@ -8,6 +8,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdb
 
   if (!process.env.TMDB_API_KEY) return NextResponse.json(null, { status: 404 });
 
-  const details = await getMovieDetails(tmdbId, { lang, country });
-  return NextResponse.json(details, { status: details ? 200 : 404 });
+  try {
+    const details = await getMovieDetails(tmdbId, { lang, country });
+    return NextResponse.json(details, { status: details ? 200 : 404 });
+  } catch (e) {
+    // 502, não 404: o filme pode existir, quem não respondeu foi o TMDB.
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 502 });
+  }
 }

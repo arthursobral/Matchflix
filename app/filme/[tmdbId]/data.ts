@@ -1,3 +1,5 @@
+import { ptBR as t } from "@/messages/pt-BR";
+
 export type Provider = { name: string; logoUrl: string };
 
 export type MovieDetails = {
@@ -12,9 +14,10 @@ export type MovieDetails = {
   providers: { flatrate: Provider[]; rent: Provider[]; buy: Provider[] } | null;
 } | null;
 
-/** Único país hoje suportado pelo app (ver messages/pt-BR.ts `create.country.options`). */
+/** Único país hoje suportado pelo app (ver messages/pt-BR.ts `create.country.options`). `null` = não existe; catálogo fora do ar rejeita. */
 export async function getMovieDetails(tmdbId: string, country = "BR"): Promise<MovieDetails> {
   const res = await fetch(`/api/movies/${tmdbId}?country=${country}`);
-  if (!res.ok) return null;
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(t.network.catalog);
   return res.json();
 }

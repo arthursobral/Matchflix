@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { PickableMovie } from "@/app/escolher/PickMovie";
+import { userMessage } from "@/lib/errors";
 import { countryLabel } from "@/lib/labels";
 import { resolveMovie } from "@/lib/movies";
 import { haloGradient, posterColor } from "@/lib/poster-color";
@@ -58,7 +59,7 @@ export default function RoomMatchPage() {
       if (!movie.poster.src.startsWith("https://image.tmdb.org/")) return;
       const color = await posterColor(movie.poster.src);
       if (color && !cancelled) setData((d) => d && { ...d, halo: haloGradient(color) });
-    })().catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
+    })().catch((e) => !cancelled && setError(userMessage(e)));
     return () => {
       cancelled = true;
     };

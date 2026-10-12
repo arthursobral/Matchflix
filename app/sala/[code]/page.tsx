@@ -16,6 +16,7 @@ import {
   type Participant,
   type Room,
 } from "@/lib/rooms";
+import { userMessage } from "@/lib/errors";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
 import { ptBR as t } from "@/messages/pt-BR";
 import styles from "./sala.module.css";
@@ -46,7 +47,7 @@ export default function RoomPage() {
         setParticipants(result.participants);
         document.title = `${result.room.name} — Matchflix`;
       })
-      .catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
+      .catch((e) => !cancelled && setError(userMessage(e)));
     return () => {
       cancelled = true;
     };
@@ -84,6 +85,9 @@ export default function RoomPage() {
     setStartError(null);
     try {
       await startNextRound(room);
+      // Quem começou vai direto: o aviso em tempo real pode se perder se o canal ainda
+      // estiver se conectando (ex.: clicou logo depois de abrir a página).
+      router.push(`/escolher/${code}`);
     } catch (e) {
       if (e instanceof DeckExhaustedError) setStartError(t.round.deckExhausted);
       else setStartError(e instanceof Error && e.message.includes("só o anfitrião") ? r.startDenied : r.startFailed);
