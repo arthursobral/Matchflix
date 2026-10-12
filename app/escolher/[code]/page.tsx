@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
+import { userMessage } from "@/lib/errors";
 import { countryLabel, genresLabel } from "@/lib/labels";
 import { resolveMovie } from "@/lib/movies";
 import {
@@ -86,8 +87,6 @@ async function fetchSnapshot(code: string): Promise<Snapshot> {
   };
 }
 
-const errorMessage = (e: unknown) => (e instanceof Error ? e.message : String(e));
-
 export default function PickPage() {
   const { code } = useParams<{ code: string }>();
   const router = useRouter();
@@ -113,7 +112,7 @@ export default function PickPage() {
   }
 
   const onLoaded = useEffectEvent((s: Snapshot) => apply(s));
-  const onFailed = useEffectEvent((e: unknown) => setView({ kind: "error", message: errorMessage(e) }));
+  const onFailed = useEffectEvent((e: unknown) => setView({ kind: "error", message: userMessage(e) }));
   useEffect(() => {
     fetchSnapshot(code).then(
       (s) => onLoaded(s),

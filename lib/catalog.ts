@@ -28,13 +28,18 @@ function apiKey(): string {
   return key;
 }
 
+/** O TMDB respondeu que o filme não existe — diferente de o TMDB estar fora do ar. */
+class TmdbNotFoundError extends Error {}
+
 async function tmdbFetch(path: string, params: Record<string, string>) {
   const url = new URL(`${TMDB_BASE}${path}`);
   url.searchParams.set("api_key", apiKey());
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   // Cache de 1h: bem abaixo do limite de retenção de 6 meses do TMDB, e evita bater na
   // API a cada requisição para os filmes mais populares (os mesmos circulam bastante).
-  const res = await fetch(url, { next: { revalidate: 3600 } });
+  // Limite de 8s: um TMDB travado não pode deixar a tela de quem espera presa para sempre.
+  const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000) });
+  if (res.status === 404) throw new TmdbNotFoundError(`TMDB ${path} não encontrado`);
   if (!res.ok) throw new Error(`TMDB ${path} respondeu ${res.status}`);
   return res.json();
 }
@@ -57,8 +62,6 @@ export async function discoverMovieIds(opts: { genres: string[]; exclude: string
       include_adult: "false",
       "vote_count.gte": "200",
       page: String(page),
-      // "|" = OU (qualquer um dos gêneros); "," faria o TMDB tratar como E (interseção),
-      // esgotando o catálogo rápido demais quando mais de um gênero está marcado.
       // "|" = OU (qualquer um dos gêneros); "," faria o TMDB tratar como E (interseção),
       // esgotando o catálogo rápido demais quando mais de um gênero está marcado.
       ...(genreIds.length > 0 ? { with_genres: genreIds.join("|") } : {}),
@@ -92,7 +95,10 @@ export type MovieDetails = {
   providers: { flatrate: MovieProvider[]; rent: MovieProvider[]; buy: MovieProvider[] } | null;
 };
 
-/** Detalhes completos de um filme e onde assistir no país pedido; `null` se não existir. */
+/**
+ * Detalhes completos de um filme e onde assistir no país pedido; `null` se não existir.
+ * TMDB fora do ar ou travado é erro (rejeita), não "não existe".
+ */
 export async function getMovieDetails(tmdbId: string, opts: { lang: string; country: string }): Promise<MovieDetails | null> {
   let movie: {
     id: number;
@@ -105,8 +111,9 @@ export async function getMovieDetails(tmdbId: string, opts: { lang: string; coun
   };
   try {
     movie = await tmdbFetch(`/movie/${tmdbId}`, { language: opts.lang });
-  } catch {
-    return null;
+  } catch (e) {
+    if (e instanceof TmdbNotFoundError) return null;
+    throw e;
   }
 
   type RawProviderList = { provider_name: string; logo_path: string }[];
