@@ -4,6 +4,7 @@ const TOO_SLOW = "A verificação de segurança demorou demais. Confira sua cone
 interface TurnstileOptions {
   sitekey: string;
   theme?: "light" | "dark" | "auto";
+  retry?: "auto" | "never";
   callback: (token: string) => void;
   "error-callback"?: (code: string) => void;
   "timeout-callback"?: () => void;
@@ -75,7 +76,10 @@ export function getCaptchaToken(timeoutMs = 15_000): Promise<string | undefined>
       border: "1px solid var(--border, #3b3839)",
     });
     overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    // Dentro do <dialog> aberto, se houver (ex.: modal do apelido): o dialog fica numa camada
+    // acima de tudo e deixa o resto da página inerte — fora dele, o desafio ficaria escondido
+    // atrás do modal e sem poder ser clicado.
+    (document.querySelector("dialog[open]") ?? document.body).appendChild(overlay);
 
     let widgetId: string | undefined;
     let done = false;
@@ -99,6 +103,9 @@ export function getCaptchaToken(timeoutMs = 15_000): Promise<string | undefined>
         widgetId = window.turnstile!.render(box, {
           sitekey,
           theme: "dark",
+          // Quem tenta de novo é o app (botão), não o Turnstile: sozinho, ele tentava
+          // reiniciar um widget que já tinha sido removido e soltava um erro no console.
+          retry: "never",
           "before-interactive-callback": () => {
             // Agora depende da pessoa resolver o desafio; o próprio Turnstile avisa se expirar.
             clearTimeout(timer);
