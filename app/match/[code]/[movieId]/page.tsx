@@ -37,13 +37,12 @@ export default function RoomMatchPage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await ensureAnonymousSession();
-      const result = await getRoomByCode(code);
+      const [, result] = await Promise.all([ensureAnonymousSession(), getRoomByCode(code)]);
       if (!result) return setError(t.room.notFound);
       const round = await getCurrentRound(result.room.id);
-      if (!round || !(await getRoundMatches(round.id)).includes(movieId)) return setError(t.round.notMatch);
-      const movie = await resolveMovie(movieId, result.room.country);
-      if (!movie) return setError(t.round.notMatch);
+      if (!round) return setError(t.round.notMatch);
+      const [matches, movie] = await Promise.all([getRoundMatches(round.id), resolveMovie(movieId, result.room.country)]);
+      if (!matches.includes(movieId) || !movie) return setError(t.round.notMatch);
       markMatchSeen(round.id, movieId);
       if (cancelled) return;
       document.title = `${t.match.title} — Matchflix`;
@@ -66,7 +65,12 @@ export default function RoomMatchPage() {
   }, [code, movieId]);
 
   // Carregando/erro: mesmo texto simples das outras telas de sala (sem design próprio ainda).
-  if (error) return <main className={styles.main}>{error}</main>;
+  if (error)
+    return (
+      <main className={styles.main}>
+        <p role="alert">{error}</p>
+      </main>
+    );
   if (!data) return <main className={styles.main}>{t.room.loading}</main>;
 
   return (

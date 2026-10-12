@@ -1,3 +1,20 @@
+/* Zera o estilo padrão do <dialog>: o visual continua sendo o do .backdrop e do .panel. */
+.dialog {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.dialog::backdrop {
+  background: transparent;
+}
+
 .backdrop {
   position: fixed;
   inset: 0;

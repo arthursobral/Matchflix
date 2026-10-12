@@ -97,7 +97,12 @@ export default function RoomPage() {
   }
 
   // Estados de carregamento e erro ainda não têm design aprovado (M1); texto simples por ora.
-  if (error) return <main className={styles.main}>{error}</main>;
+  if (error)
+    return (
+      <main className={styles.main}>
+        <p role="alert">{error}</p>
+      </main>
+    );
   if (!room) return <main className={styles.main}>{r.loading}</main>;
 
   const total = participants.length;
@@ -132,7 +137,7 @@ export default function RoomPage() {
           <p className="mobile-only">{r.count(total)}</p>
         </div>
 
-        <ul className={styles.list}>
+        <ul className={styles.list} aria-live="polite">
           {participants.map((p) => (
             <li key={p.id}>
               <Avatar initials={initialsOf(p.nickname)} host={p.isHost} size="lg" />

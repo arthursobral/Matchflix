@@ -52,15 +52,14 @@ async function fetchSnapshot(code: string): Promise<Snapshot> {
   const round = await getCurrentRound(result.room.id);
   if (!round) return { kind: "go", to: `/sala/${code}`, replace: true };
 
-  // Um match que este aparelho ainda não mostrou vem antes de tudo: a tela de match aparece
-  // para todos (M0), inclusive para quem estava recarregando a página quando aconteceu.
-  const unseen = await firstUnseenMatch(round.id);
-  if (unseen) return { kind: "go", to: `/match/${code}/${unseen}` };
-
-  const [voted, resolved] = await Promise.all([
+  const [unseen, voted, resolved] = await Promise.all([
+    firstUnseenMatch(round.id),
     getMyVotedMovieIds(round.id),
     Promise.all(round.movieIds.map((id) => resolveMovie(id, result.room.country))),
   ]);
+  // Um match que este aparelho ainda não mostrou vem antes de tudo: a tela de match aparece
+  // para todos (M0), inclusive para quem estava recarregando a página quando aconteceu.
+  if (unseen) return { kind: "go", to: `/match/${code}/${unseen}` };
   // Pular um filme que não carregou deixaria a pessoa sem votar nele — e a rodada nunca fecharia.
   if (resolved.some((m) => m === null)) return { kind: "error", message: t.round.loadFailed };
   const movies = resolved as PickableMovie[];
@@ -166,7 +165,12 @@ export default function PickPage() {
     }
   }
 
-  if (view.kind === "error") return <main className={styles.main}>{view.message}</main>;
+  if (view.kind === "error")
+    return (
+      <main className={styles.main}>
+        <p role="alert">{view.message}</p>
+      </main>
+    );
   if (view.kind === "loading" || !room || !round) return <main className={styles.main}>{t.room.loading}</main>;
   if (view.kind === "waiting") return <RoundStatus key="waiting" kind="waiting" roundNumber={round.number} />;
   if (view.kind === "ended")
