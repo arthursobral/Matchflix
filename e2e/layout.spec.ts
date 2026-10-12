@@ -52,8 +52,10 @@ const desktop: Screen[] = [
   {
     path: "/escolher",
     checks: [
-      { name: "Passar", find: button("Passar"), box: [420, 675, 147, 56] },
-      { name: "Quero assistir", find: button("Quero assistir"), box: [581, 675, 180, 56] },
+      // Centralizados sob o pôster (mudança pedida pelo usuário em 12/10/2026); no design v1
+      // começavam alinhados à esquerda do pôster, em x=420.
+      { name: "Passar", find: button("Passar"), box: [408, 675, 147, 56] },
+      { name: "Quero assistir", find: button("Quero assistir"), box: [569, 675, 180, 56] },
       { name: "pôster", find: alt("A última sessão"), box: [422, 188, 312, 451] },
     ],
   },
@@ -94,8 +96,10 @@ const mobile: Screen[] = [
   {
     path: "/escolher",
     checks: [
-      { name: "Passar", find: button("Passar"), box: [24, 768, 137, 56] },
-      { name: "Quero assistir", find: button("Quero assistir"), box: [173, 768, 193, 56] },
+      // Botões logo depois da sinopse, antes de "Onde assistir" (mudança pedida pelo usuário em
+      // 12/10/2026, para escolher sem rolar a tela); no design v1 ficavam em y=768.
+      { name: "Passar", find: button("Passar"), box: [24, 678, 137, 56] },
+      { name: "Quero assistir", find: button("Quero assistir"), box: [173, 678, 193, 56] },
       { name: "pôster", find: alt("A última sessão"), box: [93, 196, 204, 295] },
     ],
   },
@@ -135,7 +139,8 @@ for (const [device, viewport, screens] of [
           // (que dependem da altura da lista) baterem com o mockup.
           await joinTestRoom(await (await browser.newContext()).newPage(), code, "Lucas");
           await joinTestRoom(await (await browser.newContext()).newPage(), code, "Bruno");
-          await expect(page.locator("li")).toHaveCount(3); // chega ao vivo, via Realtime (M3)
+          // Chega ao vivo, via Realtime (M3); 15s porque, se o aviso se perder, a sala confere a cada 10s.
+          await expect(page.locator("li")).toHaveCount(3, { timeout: 15_000 });
         } else {
           await page.goto(screen.path);
         }

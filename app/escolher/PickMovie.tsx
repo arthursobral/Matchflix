@@ -217,11 +217,15 @@ export function PickMovie({ movies: realMovies, round }: Props) {
           </div>
         </div>
 
-        <section className={styles.detail} aria-live="polite">
+        <section className={styles.detail}>
           <p className={`eyebrow ${styles.suggest} desktop-only`}>{p.eyebrow}</p>
-          <h1>{movie.title}</h1>
-          <p className={styles.meta}>{movie.meta}</p>
-          <p className={styles.synopsis}>{movie.synopsis}</p>
+          {/* Anuncia o filme novo para leitor de tela a cada voto. Caixa própria: no celular a
+              .detail vira display: contents (ver escolher.module.css), que pode perder o anúncio. */}
+          <div className={styles.summary} aria-live="polite">
+            <h1>{movie.title}</h1>
+            <p className={styles.meta}>{movie.meta}</p>
+            <p className={styles.synopsis}>{movie.synopsis}</p>
+          </div>
           {isReal ? (
             <WhereToWatch providers={movie.providers} label={`${p.where} · ${room.country}`} className={styles.where} />
           ) : (

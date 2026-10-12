@@ -54,7 +54,8 @@ export function dominantColor(data: Uint8ClampedArray): Rgb | null {
 
 /** Mesmo desenho dos halos do design aprovado (globals.css, `--halo-*`), com a cor do pôster. */
 export function haloGradient([r, g, b]: Rgb): string {
-  return `radial-gradient(closest-side, rgb(${r} ${g} ${b} / 0.3), rgb(${r} ${g} ${b} / 0.12) 55%, rgb(22 22 24 / 0))`;
+  // Mais forte que o halo da demonstração (0.3/0.12), a pedido do usuário em 12/10/2026.
+  return `radial-gradient(closest-side, rgb(${r} ${g} ${b} / 0.45), rgb(${r} ${g} ${b} / 0.18) 55%, rgb(22 22 24 / 0))`;
 }
 
 /** Lê o pôster (versão pequena do TMDB, que libera CORS) e devolve a cor do halo. Só no navegador. */

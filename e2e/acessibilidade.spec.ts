@@ -64,7 +64,8 @@ for (const [device, viewport] of [
       const code = await createTestRoom(page);
       const guest = await (await browser.newContext({ viewport })).newPage();
       await joinTestRoom(guest, code, "Convidado");
-      await expect(page.locator("li")).toHaveCount(2);
+      // 15s: se o aviso de tempo real se perder, a sala confere de novo a cada 10s.
+      await expect(page.locator("li")).toHaveCount(2, { timeout: 15_000 });
       expect(await axe(page), "sala de espera").toEqual([]);
 
       await page.getByRole("button", { name: "Todos aqui? Começar" }).click();
