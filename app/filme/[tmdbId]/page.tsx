@@ -52,7 +52,7 @@ export default function MovieDetailsPage() {
   if (!movie)
     return (
       <main className={styles.main}>
-        <p>{error ?? d.notFound}</p>
+        <p role="alert">{error ?? d.notFound}</p>
         <div className={styles.actions}>{back}</div>
       </main>
     );
@@ -63,7 +63,17 @@ export default function MovieDetailsPage() {
 
       <figure className={styles.visual}>
         {movie.posterUrl ? (
-          <Image src={movie.posterUrl} alt={`Pôster de ${movie.title}`} width={300} height={450} className={styles.poster} priority />
+          // unoptimized: o TMDB já entrega o tamanho certo; passar pelo otimizador do Next deixava
+          // o pôster mais lento (LCP 2,3s → 1,8s em 4G lento, medido) e gasta cota de imagem da Vercel.
+          <Image
+            src={movie.posterUrl}
+            alt={`Pôster de ${movie.title}`}
+            width={300}
+            height={450}
+            className={styles.poster}
+            priority
+            unoptimized
+          />
         ) : (
           <p className={styles.posterFallback}>{d.noPoster}</p>
         )}

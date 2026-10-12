@@ -79,7 +79,7 @@ test.describe("Falhas de rede pela interface (M8)", () => {
     await createTestRoom(page);
     await supabaseDown(page);
     await page.reload();
-    await expect(page.getByText(OFFLINE)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("alert").filter({ hasText: OFFLINE })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(TECHNICAL)).toHaveCount(0);
   });
 
@@ -100,7 +100,8 @@ test.describe("Falhas de rede pela interface (M8)", () => {
     const title = await page.getByRole("heading", { level: 1 }).textContent();
     await page.route("**/rpc/cast_vote", (route) => route.abort("internetdisconnected"));
     await page.keyboard.press("ArrowLeft");
-    await expect(page.getByText("Não deu para registrar seu voto.", { exact: false })).toBeVisible();
+    // role=alert: quem vota pelo teclado com leitor de tela precisa ouvir que deu errado.
+    await expect(page.getByRole("alert").filter({ hasText: "Não deu para registrar seu voto." })).toBeVisible();
 
     // O voto não foi salvo: ao voltar, o mesmo filme aparece de novo (nada se perde em silêncio).
     await page.unroute("**/rpc/cast_vote");
@@ -113,7 +114,7 @@ test.describe("Falhas de rede pela interface (M8)", () => {
     await startSoloRound(page);
     await catalogDown(page);
     await page.reload();
-    await expect(page.getByText(CATALOG)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("alert").filter({ hasText: CATALOG })).toBeVisible({ timeout: 15_000 });
   });
 
   test("catálogo fora do ar na tela de match: não diz que o filme não deu match", async ({ page }) => {
@@ -125,7 +126,7 @@ test.describe("Falhas de rede pela interface (M8)", () => {
 
     await catalogDown(page);
     await page.reload();
-    await expect(page.getByText(CATALOG)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("alert").filter({ hasText: CATALOG })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText("Esse filme não deu match nesta rodada.")).toHaveCount(0);
   });
 });
@@ -182,7 +183,7 @@ test.describe("Tela de detalhes com o catálogo fora do ar (M8)", () => {
     test.skip(!hasTmdb, "precisa de TMDB_API_KEY configurada (.env.local)");
     await catalogDown(page);
     await page.goto("/filme/550");
-    await expect(page.getByText(CATALOG)).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: CATALOG })).toBeVisible();
     await expect(page.getByText("Filme não encontrado.")).toHaveCount(0);
   });
 

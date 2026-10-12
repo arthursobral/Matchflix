@@ -52,7 +52,7 @@ export default function Home() {
         </div>
       </main>
 
-      <section id="como-funciona" className={`${styles.steps} desktop-only`}>
+      <section id="como-funciona" aria-label={t.nav.howItWorks} className={`${styles.steps} desktop-only`}>
         {t.home.steps.map((step, i) => (
           <div key={step.title}>
             <span className="eyebrow">{String(i + 1).padStart(2, "0")}</span>
