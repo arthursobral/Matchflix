@@ -79,6 +79,22 @@ export default function RoomPage() {
     });
   }, [room, code, router]);
 
+  useEffect(() => {
+    if (!room) return;
+    // O tempo real não garante entrega: um aviso perdido deixaria a lista desatualizada ou
+    // alguém parado aqui com a rodada já começada. Confere de novo a cada 10s.
+    const id = setInterval(() => {
+      getRoomByCode(code)
+        .then((result) => {
+          if (!result) return;
+          setParticipants(result.participants);
+          if (result.room.status === "voting") router.push(`/escolher/${code}`);
+        })
+        .catch(() => {});
+    }, 10_000);
+    return () => clearInterval(id);
+  }, [room, code, router]);
+
   async function handleStart() {
     if (!room || starting) return;
     setStarting(true);
