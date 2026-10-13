@@ -21,7 +21,12 @@ export async function GET() {
   const tmdbKey = process.env.TMDB_API_KEY;
 
   const [supabase, tmdb] = await Promise.all([
-    supabaseUrl && anonKey ? check(`${supabaseUrl}/auth/v1/health`, { apikey: anonKey }) : "não configurado",
+    // Consulta de verdade ao banco (não só ao login): confirma que o Postgres responde e conta
+    // como atividade para o Supabase gratuito não pausar o projeto (ver .github/workflows/manter-ativo.yml).
+    // A RLS devolve lista vazia para quem não é participante, mas a consulta roda do mesmo jeito.
+    supabaseUrl && anonKey
+      ? check(`${supabaseUrl}/rest/v1/rooms?select=id&limit=1`, { apikey: anonKey, Authorization: `Bearer ${anonKey}` })
+      : "não configurado",
     tmdbKey ? check(`https://api.themoviedb.org/3/configuration?api_key=${tmdbKey}`) : "não configurado",
   ]);
   const ok = supabase === "ok" && tmdb === "ok";
