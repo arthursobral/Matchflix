@@ -1,5 +1,7 @@
 # Matchflix
 
+**Português** · [English](README.en.md)
+
 **Escolha de filme em grupo, por swipe.** Cada pessoa vota no próprio celular; quando **todo mundo** aprova o mesmo filme, dá match.
 
 [![CI](https://github.com/arthursobral/Matchflix/actions/workflows/ci.yml/badge.svg)](https://github.com/arthursobral/Matchflix/actions/workflows/ci.yml)
@@ -20,6 +22,8 @@
   </tr>
 </table>
 
+> O site tem versão em português e em inglês (seletor "Brasil · PT" no cabeçalho).
+>
 > As capturas usam o modo de demonstração (pôsteres fictícios, arte própria). Na sala de verdade, o catálogo, os pôsteres e o "onde assistir" vêm do TMDB.
 
 ## Como funciona
@@ -53,7 +57,7 @@
 
 ## Testes
 
-**97 testes end-to-end** (Playwright) em 11 arquivos, contra um Supabase de verdade (local, em Docker) e o TMDB real: fluxo completo, consenso, votos concorrentes, isolamento entre salas, falhas de rede, posições do layout conferidas contra o design aprovado (tolerância de 3px), acessibilidade. Mais um roteiro SQL (`supabase/tests/`) para a retenção de dados.
+**102 testes end-to-end** (Playwright) em 12 arquivos, contra um Supabase de verdade (local, em Docker) e o TMDB real: fluxo completo, consenso, votos concorrentes, isolamento entre salas, falhas de rede, versão em inglês, posições do layout conferidas contra o design aprovado (tolerância de 3px), acessibilidade. Mais um roteiro SQL (`supabase/tests/`) para a retenção de dados.
 
 Os testes das correções mais importantes passaram por **checagem de mutação**: o código corrigido é desfeito de propósito e o teste precisa falhar — para provar que ele pega o bug, e não apenas passa.
 
@@ -83,7 +87,7 @@ NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 NEXT_PUBLIC_SUPABASE_ANON_KEY=<a
 app/                 telas (App Router) e rotas /api (catálogo, saúde)
 components/          componentes compartilhados (botão, pôster, modal, onde assistir…)
 lib/                 salas e votos (Supabase), catálogo (TMDB), cor do pôster, CAPTCHA
-messages/pt-BR.ts    todos os textos da interface
+messages/            todos os textos da interface (pt-BR e en)
 supabase/migrations/ esquema, RLS e funções do banco
 e2e/                 testes Playwright
 ```
