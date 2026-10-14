@@ -1,6 +1,7 @@
 # Documentação: só o README vai para o repositório
 *.md
 !README.md
+!README.en.md
 docs/
 
 # Skills e ferramentas de agente
