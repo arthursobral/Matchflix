@@ -18,18 +18,21 @@ import {
 } from "@/lib/rooms";
 import { userMessage } from "@/lib/errors";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import styles from "./sala.module.css";
 
-const r = t.room;
+/** Erro guardado como chave (ou o próprio erro) e traduzido só na hora de mostrar. */
+const NOT_FOUND = "notFound";
 
 export default function RoomPage() {
+  const t = useMessages();
+  const r = t.room;
   const { code } = useParams<{ code: string }>();
   const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [startError, setStartError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
 
@@ -39,7 +42,7 @@ export default function RoomPage() {
       .then(([uid, result]) => {
         if (cancelled) return;
         if (!result) {
-          setError(r.notFound);
+          setError(NOT_FOUND);
           return;
         }
         setUserId(uid);
@@ -47,7 +50,7 @@ export default function RoomPage() {
         setParticipants(result.participants);
         document.title = `${result.room.name} — Matchflix`;
       })
-      .catch((e) => !cancelled && setError(userMessage(e)));
+      .catch((e) => !cancelled && setError(e));
     return () => {
       cancelled = true;
     };
@@ -66,7 +69,7 @@ export default function RoomPage() {
     // temporizador garante que quem já está dentro seja avisado mesmo sem nenhum outro
     // evento em tempo real acontecer nesse meio-tempo.
     const ms = new Date(room.expiresAt).getTime() - Date.now();
-    const id = setTimeout(() => setError(r.notFound), Math.max(ms, 0));
+    const id = setTimeout(() => setError(NOT_FOUND), Math.max(ms, 0));
     return () => clearTimeout(id);
   }, [room]);
 
@@ -113,10 +116,10 @@ export default function RoomPage() {
   }
 
   // Estados de carregamento e erro ainda não têm design aprovado (M1); texto simples por ora.
-  if (error)
+  if (error !== null)
     return (
       <main className={styles.main}>
-        <p role="alert">{error}</p>
+        <p role="alert">{error === NOT_FOUND ? r.notFound : userMessage(error, t)}</p>
       </main>
     );
   if (!room) return <main className={styles.main}>{r.loading}</main>;
@@ -140,7 +143,7 @@ export default function RoomPage() {
             <CopyInviteButton label={r.invite.copy} copiedLabel={r.invite.copied} code={room.code} />
           </div>
           <p className={`${styles.meta} desktop-only`}>
-            {countryLabel(room.country)} · {genresLabel(room.genres)}
+            {countryLabel(room.country, t)} · {genresLabel(room.genres, t)}
           </p>
         </div>
       </section>
@@ -169,7 +172,7 @@ export default function RoomPage() {
         </ul>
 
         <p className={`${styles.meta} ${styles.metaMobile} mobile-only`}>
-          {countryLabel(room.country)} · {genresLabel(room.genres)}
+          {countryLabel(room.country, t)} · {genresLabel(room.genres, t)}
         </p>
 
         <div className={styles.start}>

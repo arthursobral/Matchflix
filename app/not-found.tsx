@@ -1,10 +1,9 @@
 import { Button } from "@/components/Button";
-import { ptBR as t } from "@/messages/pt-BR";
+import { getMessages } from "@/lib/i18n-server";
 import styles from "./escolher/[code]/round.module.css";
 
-const s = t.status;
-
-export default function NotFound() {
+export default async function NotFound() {
+  const s = (await getMessages()).status;
   return (
     <main className={styles.main}>
       <p className="eyebrow">{s.notFound.eyebrow}</p>

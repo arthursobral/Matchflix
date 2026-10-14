@@ -1,21 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { Shell } from "@/components/Shell";
+import { getLocale, getMessages } from "@/lib/i18n-server";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Matchflix — Escolham. Combinem. Assistam.",
-  description: "Encontre o filme que todo mundo quer ver. Reúna seus amigos, deslize e dê match.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getMessages();
+  return { title: t.meta.title, description: t.meta.description };
+}
 
 export const viewport: Viewport = {
   themeColor: "#161618",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
   return (
-    <html lang="pt-BR">
+    <html lang={locale === "en" ? "en" : "pt-BR"}>
       <body>
-        <Shell>{children}</Shell>
+        <LocaleProvider locale={locale}>
+          <Shell>{children}</Shell>
+        </LocaleProvider>
       </body>
     </html>
   );

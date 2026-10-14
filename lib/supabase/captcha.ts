@@ -1,5 +1,6 @@
+import { CaptchaError } from "@/lib/errors";
+
 const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-const TOO_SLOW = "A verificação de segurança demorou demais. Confira sua conexão e tente de novo.";
 
 interface TurnstileOptions {
   sitekey: string;
@@ -35,7 +36,7 @@ function loadTurnstileScript(): Promise<void> {
       script.onload = () => resolve();
       script.onerror = () => {
         scriptPromise = null; // senão o erro fica memorizado e o "tente de novo" nunca funciona
-        reject(new Error("Não foi possível carregar a verificação de segurança. Confira sua conexão e tente de novo."));
+        reject(new CaptchaError("load"));
       };
       document.head.appendChild(script);
     });
@@ -91,11 +92,11 @@ export function getCaptchaToken(timeoutMs = 15_000): Promise<string | undefined>
       overlay.remove();
       settle();
     };
-    const fail = (message: string) => finish(() => reject(new Error(message)));
+    const fail = (error: Error) => finish(() => reject(error));
 
     // Se o Cloudflare não responder (rede instável, bloqueador), ninguém chama de volta:
     // sem esse limite a pessoa ficaria presa em "Entrando…" para sempre.
-    const timer = setTimeout(() => fail(TOO_SLOW), timeoutMs);
+    const timer = setTimeout(() => fail(new CaptchaError("slow")), timeoutMs);
 
     loadTurnstileScript().then(
       () => {
@@ -115,12 +116,12 @@ export function getCaptchaToken(timeoutMs = 15_000): Promise<string | undefined>
           callback: (token) => finish(() => resolve(token)),
           "error-callback": (code) => {
             console.error("Turnstile error", code);
-            fail(`Verificação de segurança falhou (erro ${code}). Tente de novo.`);
+            fail(new CaptchaError("failed", code));
           },
-          "timeout-callback": () => fail(TOO_SLOW),
+          "timeout-callback": () => fail(new CaptchaError("slow")),
         });
       },
-      (e: Error) => fail(e.message),
+      (e: Error) => fail(e),
     );
   });
 }

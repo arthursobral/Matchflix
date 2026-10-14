@@ -1,4 +1,5 @@
 import { getSupabase } from "./client";
+import { SessionError } from "@/lib/errors";
 import { getCaptchaToken } from "./captcha";
 
 /**
@@ -17,7 +18,7 @@ export async function ensureAnonymousSession(): Promise<string> {
   const { data, error } = await supabase.auth.signInAnonymously(captchaToken ? { options: { captchaToken } } : undefined);
   if (error || !data.user) {
     const reason = error?.message ?? "resposta sem usuário";
-    throw new Error(`Não foi possível iniciar a sessão (${reason}). Verifique a URL/chave do Supabase e se o login anônimo está habilitado.`);
+    throw new SessionError(`signInAnonymously falhou: ${reason} (confira a URL/chave do Supabase e se o login anônimo está habilitado)`);
   }
   return data.user.id;
 }

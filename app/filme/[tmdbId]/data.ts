@@ -1,4 +1,4 @@
-import { ptBR as t } from "@/messages/pt-BR";
+import { CatalogUnavailableError } from "@/lib/errors";
 
 export type Provider = { name: string; logoUrl: string };
 
@@ -15,9 +15,9 @@ export type MovieDetails = {
 } | null;
 
 /** Único país hoje suportado pelo app (ver messages/pt-BR.ts `create.country.options`). `null` = não existe; catálogo fora do ar rejeita. */
-export async function getMovieDetails(tmdbId: string, country = "BR"): Promise<MovieDetails> {
-  const res = await fetch(`/api/movies/${tmdbId}?country=${country}`);
+export async function getMovieDetails(tmdbId: string, lang: string, country = "BR"): Promise<MovieDetails> {
+  const res = await fetch(`/api/movies/${tmdbId}?country=${country}&lang=${lang}`);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(t.network.catalog);
+  if (!res.ok) throw new CatalogUnavailableError(`/api/movies/${tmdbId} respondeu ${res.status}`);
   return res.json();
 }

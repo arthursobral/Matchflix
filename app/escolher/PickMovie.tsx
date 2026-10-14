@@ -10,10 +10,10 @@ import { WhereToWatch } from "@/components/WhereToWatch";
 import { demoAvailability, demoMovies } from "@/lib/demo-movies";
 import { demoRoom } from "@/lib/demo-room";
 import { haloGradient, posterColor, type Rgb } from "@/lib/poster-color";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
+import { countryLabel } from "@/lib/labels";
 import styles from "./escolher.module.css";
 
-const p = t.pick;
 const TOTAL = 20;
 const FIRST = 4;
 const SWIPE_DISTANCE = 90;
@@ -65,12 +65,14 @@ function demoAsPickable(m: (typeof demoMovies)[number]): PickableMovie {
 const isTmdbPoster = (src: string) => src.startsWith("https://image.tmdb.org/");
 
 export function PickMovie({ movies: realMovies, round }: Props) {
+  const t = useMessages();
+  const p = t.pick;
   const router = useRouter();
   const isReal = !!round && !!realMovies;
   const movies = isReal ? realMovies! : demoMovies.map(demoAsPickable);
   const room = round
     ? { name: round.roomName, participants: round.participants, country: round.country, genres: round.genres }
-    : demoRoom;
+    : { ...demoRoom, country: countryLabel("BR", t), genres: t.room.allGenres };
   const [step, setStep] = useState(0);
   const [dx, setDx] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -235,7 +237,7 @@ export function PickMovie({ movies: realMovies, round }: Props) {
               </p>
               <div className={styles.provider}>
                 <span className={styles.chip}>{demoAvailability.provider}</span>
-                <span>{demoAvailability.note}</span>
+                <span>{t.match.providerNote.flatrate}</span>
               </div>
             </div>
           )}

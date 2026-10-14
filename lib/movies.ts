@@ -1,5 +1,5 @@
 import type { PickableMovie } from "@/app/escolher/PickMovie";
-import { ptBR as t } from "@/messages/pt-BR";
+import { CatalogUnavailableError } from "./errors";
 import { demoMovies } from "./demo-movies";
 
 type MovieDetailsResponse = {
@@ -24,7 +24,7 @@ function formatMeta(m: MovieDetailsResponse): string {
  * (ver `app/api/movies/route.ts`), de um dos filmes fictícios do M1 — resolvido primeiro,
  * sem ir à rede. `null` = o filme não existe mais no TMDB; catálogo fora do ar rejeita.
  */
-export async function resolveMovie(id: string, country: string): Promise<PickableMovie | null> {
+export async function resolveMovie(id: string, country: string, lang: string): Promise<PickableMovie | null> {
   const demo = demoMovies.find((m) => m.id === id);
   if (demo)
     return {
@@ -39,9 +39,9 @@ export async function resolveMovie(id: string, country: string): Promise<Pickabl
       tmdbUrl: null,
     };
 
-  const res = await fetch(`/api/movies/${id}?country=${country}`);
+  const res = await fetch(`/api/movies/${id}?country=${country}&lang=${lang}`);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(t.network.catalog);
+  if (!res.ok) throw new CatalogUnavailableError(`/api/movies/${id} respondeu ${res.status}`);
   const details = (await res.json()) as MovieDetailsResponse;
   return {
     id: details.id,

@@ -1,4 +1,13 @@
-import { demoPosters } from "@/components/Poster";
+/**
+ * Pôsteres vetoriais fictícios do modo de demonstração. Ficam aqui, e não em Poster.tsx:
+ * aquele é um componente de navegador ("use client"), e dados exportados de lá chegam
+ * vazios às páginas do servidor (como a inicial).
+ */
+export const demoPosters = {
+  silencio: { src: "/demo/silencio.svg", title: "Silêncio" },
+  horizonte: { src: "/demo/horizonte.svg", title: "Horizonte" },
+  ultimaSessao: { src: "/demo/ultima-sessao.svg", title: "A última sessão" },
+} as const;
 
 /** Filmes fictícios do modo de demonstração (M1). Substituídos por dados do TMDB no M4. */
 export const demoMovies = [

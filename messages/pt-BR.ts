@@ -1,8 +1,17 @@
 export const ptBR = {
+  /** Idioma pedido ao TMDB (títulos, sinopses e gêneros dos filmes). */
+  tmdbLanguage: "pt-BR",
+  meta: {
+    title: "Matchflix — Escolham. Combinem. Assistam.",
+    description: "Encontre o filme que todo mundo quer ver. Reúna seus amigos, deslize e dê match.",
+    create: "Criar sala — Matchflix",
+    join: "Entrar na sala — Matchflix",
+    pick: "Escolher filme — Matchflix",
+  },
   brand: "matchflix",
+  posterAlt: (title: string) => `Pôster: ${title}`,
   tagline: "Escolham. Combinem. Assistam.",
-  beta: "Beta 01",
-  nav: { howItWorks: "Como funciona", locale: "Brasil · PT", soon: "Em breve" },
+  nav: { howItWorks: "Como funciona", locale: "Brasil · PT", switchLocale: "Mudar o idioma para inglês", soon: "Em breve" },
   home: {
     eyebrow: "A sessão é de vocês.",
     title: ["Menos indecisão.", "Mais cinema."],
@@ -180,6 +189,12 @@ export const ptBR = {
   network: {
     offline: "Sem conexão com o servidor. Confira sua internet e tente de novo.",
     catalog: "O catálogo de filmes não respondeu. Tente de novo em instantes.",
+  },
+  errors: {
+    session: "Não foi possível iniciar a sessão. Recarregue a página e tente de novo.",
+    captchaSlow: "A verificação de segurança demorou demais. Confira sua conexão e tente de novo.",
+    captchaLoad: "Não foi possível carregar a verificação de segurança. Confira sua conexão e tente de novo.",
+    captchaFailed: (code: string) => `Verificação de segurança falhou (erro ${code}). Tente de novo.`,
   },
   movieDetails: {
     eyebrow: "Detalhes do filme",

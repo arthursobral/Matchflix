@@ -1,10 +1,12 @@
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
-import { Poster, demoPosters } from "@/components/Poster";
-import { ptBR as t } from "@/messages/pt-BR";
+import { Poster } from "@/components/Poster";
+import { getMessages } from "@/lib/i18n-server";
+import { demoPosters } from "@/lib/demo-movies";
 import styles from "./page.module.css";
 
-export default function Home() {
+export default async function Home() {
+  const t = await getMessages();
   return (
     <>
       <main className={styles.hero}>

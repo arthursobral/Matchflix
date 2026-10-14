@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ptBR as t } from "@/messages/pt-BR";
+import { getMessages } from "@/lib/i18n-server";
+import { LocaleToggle } from "./LocaleToggle";
 import styles from "./Shell.module.css";
 
-export function Shell({ children }: { children: ReactNode }) {
+export async function Shell({ children }: { children: ReactNode }) {
+  const t = await getMessages();
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -11,13 +13,10 @@ export function Shell({ children }: { children: ReactNode }) {
           {t.brand}
         </Link>
         <span className={`eyebrow ${styles.tagline}`}>{t.tagline}</span>
-        <span className={`eyebrow ${styles.beta}`}>{t.beta}</span>
         <Link href="/#como-funciona" className={styles.howItWorks}>
           {t.nav.howItWorks}
         </Link>
-        <button type="button" className={styles.locale} aria-disabled="true" title={t.nav.soon}>
-          {t.nav.locale}
-        </button>
+        <LocaleToggle className={styles.locale} />
       </header>
       {children}
       <footer className={styles.footer}>

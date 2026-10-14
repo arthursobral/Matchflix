@@ -1,10 +1,10 @@
-import { ptBR as t } from "@/messages/pt-BR";
+"use client";
+
+import { useMessages } from "./LocaleProvider";
 import styles from "./WhereToWatch.module.css";
 
 export type Provider = { name: string; logoUrl: string };
 export type Providers = { flatrate: Provider[]; rent: Provider[]; buy: Provider[] } | null;
-
-const d = t.movieDetails;
 
 function Group({ label, providers }: { label: string; providers: Provider[] }) {
   if (providers.length === 0) return null;
@@ -33,6 +33,8 @@ type Props = {
 
 /** Cartão de disponibilidade agrupado por assinatura/aluguel/compra, com o logo de cada provedor. */
 export function WhereToWatch({ providers, label, className }: Props) {
+  const t = useMessages();
+  const d = t.movieDetails;
   const empty = !providers || (providers.flatrate.length === 0 && providers.rent.length === 0 && providers.buy.length === 0);
   return (
     <section className={`${styles.where} ${className ?? ""}`} aria-label={d.where}>

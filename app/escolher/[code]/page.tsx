@@ -23,22 +23,27 @@ import {
   type Round,
 } from "@/lib/rooms";
 import { ensureAnonymousSession } from "@/lib/supabase/session";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import { PickMovie, type PickableMovie } from "../PickMovie";
 import { RoundStatus, type EndRow } from "./RoundStatus";
 import styles from "../escolher.module.css";
 
 type View =
   | { kind: "loading" }
-  | { kind: "error"; message: string }
+  | { kind: "error"; error: unknown }
   | { kind: "picking"; remaining: PickableMovie[]; votedBefore: number }
   | { kind: "waiting" }
   | { kind: "ended"; matched: EndRow[]; top: EndRow[] };
 
 type Snapshot =
   | { kind: "go"; to: string; replace?: boolean }
-  | { kind: "error"; message: string }
+  | { kind: "error"; error: unknown }
   | { kind: "ready"; uid: string; room: Room; participants: Participant[]; round: Round; deckSize: number; view: View };
+
+// Erros guardados como chave (ou o próprio erro) e traduzidos só na hora de mostrar.
+const NOT_FOUND = "notFound";
+const LOAD_FAILED = "loadFailed";
+const VOTE_FAILED = "voteFailed";
 
 async function firstUnseenMatch(roundId: string): Promise<string | undefined> {
   const seen = getSeenMatches(roundId);
@@ -46,22 +51,22 @@ async function firstUnseenMatch(roundId: string): Promise<string | undefined> {
 }
 
 /** Tudo que a tela precisa saber da rodada atual, buscado de uma vez (sem tocar em estado do React). */
-async function fetchSnapshot(code: string): Promise<Snapshot> {
+async function fetchSnapshot(code: string, lang: string): Promise<Snapshot> {
   const [uid, result] = await Promise.all([ensureAnonymousSession(), getRoomByCode(code)]);
-  if (!result) return { kind: "error", message: t.room.notFound };
+  if (!result) return { kind: "error", error: NOT_FOUND };
   const round = await getCurrentRound(result.room.id);
   if (!round) return { kind: "go", to: `/sala/${code}`, replace: true };
 
   const [unseen, voted, resolved] = await Promise.all([
     firstUnseenMatch(round.id),
     getMyVotedMovieIds(round.id),
-    Promise.all(round.movieIds.map((id) => resolveMovie(id, result.room.country))),
+    Promise.all(round.movieIds.map((id) => resolveMovie(id, result.room.country, lang))),
   ]);
   // Um match que este aparelho ainda não mostrou vem antes de tudo: a tela de match aparece
   // para todos (M0), inclusive para quem estava recarregando a página quando aconteceu.
   if (unseen) return { kind: "go", to: `/match/${code}/${unseen}` };
   // Pular um filme que não carregou deixaria a pessoa sem votar nele — e a rodada nunca fecharia.
-  if (resolved.some((m) => m === null)) return { kind: "error", message: t.round.loadFailed };
+  if (resolved.some((m) => m === null)) return { kind: "error", error: LOAD_FAILED };
   const movies = resolved as PickableMovie[];
   const base = { kind: "ready" as const, uid, room: result.room, participants: result.participants, round, deckSize: movies.length };
 
@@ -87,6 +92,8 @@ async function fetchSnapshot(code: string): Promise<Snapshot> {
 }
 
 export default function PickPage() {
+  const t = useMessages();
+  const lang = t.tmdbLanguage;
   const { code } = useParams<{ code: string }>();
   const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
@@ -100,7 +107,7 @@ export default function PickPage() {
 
   function apply(s: Snapshot) {
     if (s.kind === "go") return s.replace ? router.replace(s.to) : router.push(s.to);
-    if (s.kind === "error") return setView({ kind: "error", message: s.message });
+    if (s.kind === "error") return setView({ kind: "error", error: s.error });
     document.title = `${s.room.name} — Matchflix`;
     setUserId(s.uid);
     setRoom(s.room);
@@ -111,20 +118,21 @@ export default function PickPage() {
   }
 
   const onLoaded = useEffectEvent((s: Snapshot) => apply(s));
-  const onFailed = useEffectEvent((e: unknown) => setView({ kind: "error", message: userMessage(e) }));
+  const onFailed = useEffectEvent((e: unknown) => setView({ kind: "error", error: e }));
   useEffect(() => {
-    fetchSnapshot(code).then(
+    // Também ao trocar de idioma: títulos e sinopses vêm do TMDB no idioma escolhido.
+    fetchSnapshot(code, lang).then(
       (s) => onLoaded(s),
       (e) => onFailed(e),
     );
-  }, [code]);
+  }, [code, lang]);
 
   // Tempo real: rodada nova, rodada encerrada ou match declarado — para todo mundo na sala.
   const onRoundEvent = useEffectEvent(async () => {
     if (!room || !round) return;
     const current = await getCurrentRound(room.id);
     if (!current) return;
-    if (current.id !== round.id || current.status !== round.status) return apply(await fetchSnapshot(code));
+    if (current.id !== round.id || current.status !== round.status) return apply(await fetchSnapshot(code, lang));
     const unseen = await firstUnseenMatch(current.id);
     if (unseen) router.push(`/match/${code}/${unseen}`);
   });
@@ -152,7 +160,7 @@ export default function PickPage() {
     if (!round) return;
     castVote(round.id, movieId, approve)
       .then((matched) => matched && router.push(`/match/${code}/${movieId}`))
-      .catch(() => setView({ kind: "error", message: t.round.voteFailed }));
+      .catch(() => setView({ kind: "error", error: VOTE_FAILED }));
   }
 
   async function nextRound(genres: string[]) {
@@ -161,7 +169,7 @@ export default function PickPage() {
     setStartError(null);
     try {
       await startNextRound(room, genres);
-      apply(await fetchSnapshot(code));
+      apply(await fetchSnapshot(code, lang));
     } catch (e) {
       setStartError(e instanceof DeckExhaustedError ? t.round.deckExhausted : t.room.startFailed);
     } finally {
@@ -172,7 +180,15 @@ export default function PickPage() {
   if (view.kind === "error")
     return (
       <main className={styles.main}>
-        <p role="alert">{view.message}</p>
+        <p role="alert">
+          {view.error === NOT_FOUND
+            ? t.room.notFound
+            : view.error === LOAD_FAILED
+              ? t.round.loadFailed
+              : view.error === VOTE_FAILED
+                ? t.round.voteFailed
+                : userMessage(view.error, t)}
+        </p>
       </main>
     );
   if (view.kind === "loading" || !room || !round) return <main className={styles.main}>{t.room.loading}</main>;
@@ -203,8 +219,8 @@ export default function PickPage() {
       round={{
         roomName: room.name,
         roundNumber: round.number,
-        country: countryLabel(room.country),
-        genres: genresLabel(room.genres),
+        country: countryLabel(room.country, t),
+        genres: genresLabel(room.genres, t),
         participants: participants.map((p) => ({
           name: p.nickname,
           initials: initialsOf(p.nickname),
