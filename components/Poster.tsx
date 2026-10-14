@@ -1,11 +1,7 @@
-import Image from "next/image";
+"use client";
 
-/** Pôsteres vetoriais fictícios do modo de demonstração. */
-export const demoPosters = {
-  silencio: { src: "/demo/silencio.svg", title: "Silêncio" },
-  horizonte: { src: "/demo/horizonte.svg", title: "Horizonte" },
-  ultimaSessao: { src: "/demo/ultima-sessao.svg", title: "A última sessão" },
-} as const;
+import Image from "next/image";
+import { useMessages } from "./LocaleProvider";
 
 export type PosterImage = { src: string; title: string };
 
@@ -16,10 +12,11 @@ type Props = {
 };
 
 export function Poster({ poster, className, priority }: Props) {
+  const t = useMessages();
   return (
     <Image
       src={poster.src}
-      alt={`Pôster: ${poster.title}`}
+      alt={t.posterAlt(poster.title)}
       width={360}
       height={520}
       className={className}

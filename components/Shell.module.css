@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: space-between;
   height: 103px;
-  padding: 39px 33px 0 0;
+  padding: 39px 0 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -25,13 +25,30 @@
 }
 
 .tagline,
-.howItWorks,
-.locale {
+.howItWorks {
   display: none;
 }
 
-.beta {
-  display: block;
+/* Seletor de idioma ("Brasil · PT"): no celular, ocupa o lugar que era do "Beta 01". */
+.locale {
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  color: var(--text-2);
+  font: 11px var(--font-sans);
+  cursor: pointer;
+}
+
+.locale:hover {
+  color: var(--text);
+  border-color: var(--text-2);
+}
+
+.locale[aria-busy="true"] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .footer {
@@ -76,10 +93,6 @@
     margin: 6px 0 0 41px;
   }
 
-  .beta {
-    display: none;
-  }
-
   .howItWorks {
     display: block;
     margin: 0 50px 0 auto;
@@ -88,16 +101,11 @@
   }
 
   .locale {
-    display: block;
     width: 136px;
     height: 34px;
-    border: 1px solid var(--border);
+    padding: 0;
     border-radius: 17px;
-    background: var(--surface);
-    color: var(--text-2);
-    font: 12px var(--font-sans);
-    opacity: 0.7;
-    cursor: not-allowed;
+    font-size: 12px;
   }
 
   .footer {

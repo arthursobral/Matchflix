@@ -1,11 +1,11 @@
+"use client";
+
 import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { Poster, type PosterImage } from "@/components/Poster";
 import { SoonButton } from "@/components/SoonButton";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import styles from "./match.module.css";
-
-const m = t.match;
 
 type Props = {
   movie: { title: string; meta: string; poster: PosterImage };
@@ -25,6 +25,8 @@ type Props = {
 
 /** Composição aprovada da tela de match (M1), com os dados vindos de fora. */
 export function MatchView({ movie, participants, country, provider, keepGoingHref, haloBackground, watchHref }: Props) {
+  const t = useMessages();
+  const m = t.match;
   const total = participants.length;
   const names = new Intl.ListFormat("pt-BR", { style: "long", type: "conjunction" }).format(participants.map((p) => p.name));
 

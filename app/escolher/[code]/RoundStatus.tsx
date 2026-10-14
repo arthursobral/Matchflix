@@ -1,11 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/Button";
 import { GenrePicker } from "@/components/GenrePicker";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import styles from "./round.module.css";
-
-const r = t.round;
 
 export type EndRow = { id: string; title: string; href: string | null; approvals: number; voters: number };
 
@@ -29,6 +29,8 @@ export function RoundStatus(
         onNextRound: (genres: string[]) => void;
       },
 ) {
+  const t = useMessages();
+  const r = t.round;
   // Só importa para o anfitrião; inicializado aqui mesmo (não precisa subir pro componente pai).
   const [genres, setGenres] = useState(props.kind === "ended" ? props.genres : []);
 

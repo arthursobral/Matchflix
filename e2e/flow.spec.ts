@@ -302,9 +302,10 @@ test("Match: 'Ver opções para assistir' avisa que ainda não existe", async ({
   await expect(page.getByRole("button", { name: "Em breve" })).toBeVisible();
 });
 
-test("botões sem função ficam marcados como indisponíveis", async ({ page }) => {
+test("botões do início que já ganharam função não ficam mais marcados como indisponíveis", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Brasil · PT" })).toHaveAttribute("aria-disabled", "true");
+  // O seletor "Brasil · PT" passou a trocar o idioma (ver idioma.spec.ts).
+  await expect(page.getByRole("button", { name: "Mudar o idioma para inglês" })).not.toHaveAttribute("aria-disabled", "true");
   // "Entrar com código" já tem função (M2): é um link de verdade para /entrar.
   await expect(page.getByRole("link", { name: "Entrar com código" })).toHaveAttribute("href", "/entrar");
 });

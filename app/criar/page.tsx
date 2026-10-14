@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { ptBR as t } from "@/messages/pt-BR";
+import { getMessages } from "@/lib/i18n-server";
 import { CreateRoom } from "./CreateRoom";
 
-export const metadata: Metadata = { title: `${t.create.title} — Matchflix` };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: `${(await getMessages()).create.title} — Matchflix` };
+}
 
 export default function CreatePage() {
   return <CreateRoom />;

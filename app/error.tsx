@@ -2,12 +2,11 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/Button";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import styles from "./escolher/[code]/round.module.css";
 
-const s = t.status;
-
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  const s = useMessages().status;
   useEffect(() => {
     console.error(error);
   }, [error]);

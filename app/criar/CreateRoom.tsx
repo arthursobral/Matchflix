@@ -6,12 +6,11 @@ import { Button } from "@/components/Button";
 import { GenrePicker } from "@/components/GenrePicker";
 import { NicknamePrompt } from "@/components/NicknamePrompt";
 import { createRoom } from "@/lib/rooms";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import styles from "./create.module.css";
 
-const c = t.create;
-
 export function CreateRoom() {
+  const c = useMessages().create;
   const router = useRouter();
   const [name, setName] = useState<string>(c.roomName.defaultValue);
   const [mode, setMode] = useState<string>(c.mode.options[0].value);

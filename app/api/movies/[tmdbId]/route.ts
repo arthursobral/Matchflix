@@ -3,7 +3,8 @@ import { getMovieDetails } from "@/lib/catalog";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ tmdbId: string }> }) {
   const { tmdbId } = await params;
-  const lang = req.nextUrl.searchParams.get("lang") ?? "pt-BR";
+  // Só os idiomas do app: valor arbitrário vindo da URL não chega ao TMDB nem vira entrada de cache.
+  const lang = req.nextUrl.searchParams.get("lang") === "en-US" ? "en-US" : "pt-BR";
   const country = req.nextUrl.searchParams.get("country") ?? "BR";
 
   if (!process.env.TMDB_API_KEY) return NextResponse.json(null, { status: 404 });

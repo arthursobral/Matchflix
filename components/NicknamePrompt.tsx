@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { userMessage } from "@/lib/errors";
+import { useMessages } from "./LocaleProvider";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
 import styles from "./NicknamePrompt.module.css";
@@ -23,6 +24,7 @@ type Props = {
  * aprovada precisou ganhar um campo novo por causa disso (ver docs/m2-criar-entrar-salas.md).
  */
 export function NicknamePrompt({ title, lead, label, placeholder, confirmLabel, busyLabel, cancelLabel, onConfirm, onCancel }: Props) {
+  const t = useMessages();
   const [nickname, setNickname] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export function NicknamePrompt({ title, lead, label, placeholder, confirmLabel, 
     try {
       await onConfirm(trimmed);
     } catch (e) {
-      setError(userMessage(e));
+      setError(userMessage(e, t));
       setBusy(false);
     }
   }

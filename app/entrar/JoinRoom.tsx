@@ -5,10 +5,8 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { userMessage } from "@/lib/errors";
 import { joinRoom, RoomExpiredError, RoomLockedError, RoomNotFoundError } from "@/lib/rooms";
-import { ptBR as t } from "@/messages/pt-BR";
+import { useMessages } from "@/components/LocaleProvider";
 import styles from "./entrar.module.css";
-
-const j = t.join;
 
 /**
  * Tela provisória de entrada por código/link — design ainda não aprovado (ver
@@ -16,6 +14,8 @@ const j = t.join;
  * aprovados (Button, campos no mesmo estilo de Criar sala), sem layout novo.
  */
 export function JoinRoom() {
+  const t = useMessages();
+  const j = t.join;
   const router = useRouter();
   const params = useSearchParams();
   const [code, setCode] = useState(params.get("codigo") ?? "");
@@ -35,7 +35,7 @@ export function JoinRoom() {
       if (err instanceof RoomNotFoundError) setError(j.notFound);
       else if (err instanceof RoomExpiredError) setError(j.expired);
       else if (err instanceof RoomLockedError) setError(j.locked);
-      else setError(userMessage(err));
+      else setError(userMessage(err, t));
       setBusy(false);
     }
   }
